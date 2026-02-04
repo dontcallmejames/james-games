@@ -248,7 +248,7 @@
         port: 14159,
         status: "online",
         notes: "Live now. Steam Connect supported.",
-        connectUrl: "steam://connect/52.21.23.13:14159"
+        connectUrl: "steam://run/1169370//+connect 52.21.23.13:14159"
       },
       {
         game: "Enshrouded",
@@ -285,7 +285,7 @@
           </div>
           <div class="addrRow"><code>${addr}</code></div>
           <div class="btns">
-            ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}">Steam Connect</a>` : ``}
+            ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}">Steam Connect</a><span class="meta" style="margin-left:8px">(opens Necesse)</span>` : ``}
           </div>
         `;
         grid.appendChild(card);
