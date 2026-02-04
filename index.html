@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>James' Games</title>
+  <meta name="description" content="James' Games — one place to find and connect to our servers." />
+
+  <style>
+    :root{
+      --bg0:#050713;
+      --bg1:#0a0f22;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.035);
+      --border: rgba(255,255,255,.12);
+      --text:#e9eeff;
+      --muted:#a8b3d6;
+      --accent:#7c5cff;
+      --accent2:#00e5ff;
+      --good:#2dffb3;
+      --bad:#ff4d6d;
+      --ring: rgba(124,92,255,.35);
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 550px at 10% -5%, rgba(124,92,255,.30), transparent 60%),
+        radial-gradient(900px 550px at 90% 0%, rgba(0,229,255,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.03) 0px,
+        rgba(255,255,255,.03) 1px,
+        transparent 2px,
+        transparent 6px
+      );
+      opacity:.15;
+    }
+
+    header{
+      max-width:1100px;
+      margin:0 auto;
+      padding:40px 18px 24px;
+      text-align:center;
+      position:relative;
+    }
+
+    header::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(800px 260px at 50% 120%, rgba(124,92,255,.25), transparent 70%),
+        radial-gradient(700px 220px at 50% 115%, rgba(0,229,255,.18), transparent 72%);
+      opacity:.35;
+    }
+
+    /* BIG synthwave logo */
+    .logo{
+      width:520px;
+      max-width:95vw;
+      padding:28px 32px;
+      margin:0 auto;
+      border-radius:40px;
+      border:1px solid rgba(255,255,255,.28);
+      background:
+        radial-gradient(circle at 20% 30%, rgba(0,229,255,.65), transparent 55%),
+        radial-gradient(circle at 80% 70%, rgba(124,92,255,.85), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02));
+      box-shadow: 0 40px 140px rgba(0,0,0,.65);
+      cursor:pointer;
+      animation: pulse 4.5s ease-in-out infinite;
+    }
+
+    .wordmark{
+      font-family: "Orbitron", "Audiowide", "Oxanium", system-ui, sans-serif;
+      font-size:64px;
+      font-weight:900;
+      letter-spacing:7px;
+      text-transform:uppercase;
+      transform: skewX(-10deg);
+      background: linear-gradient(180deg, #ffffff 0%, #9a7dff 45%, #00e5ff 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      -webkit-text-stroke: 1px rgba(0,229,255,.45);
+      text-shadow:
+        0 0 18px rgba(0,229,255,.85),
+        0 0 48px rgba(124,92,255,.75),
+        0 18px 60px rgba(0,0,0,.75);
+    }
+
+    .subtitle{
+      margin:22px auto 0;
+      color:var(--muted);
+      font-size:15px;
+      max-width:70ch;
+    }
+
+    .chipRow{
+      display:flex;
+      justify-content:center;
+      gap:8px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+
+    .chip{
+      font-size:12px;
+      padding:6px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color:var(--muted);
+    }
+
+    main{max-width:1100px;margin:0 auto;padding:0 18px 40px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap:14px;
+      margin-top:22px;
+    }
+
+    .card{
+      border-radius:20px;
+      padding:16px;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      box-shadow: 0 14px 44px rgba(0,0,0,.32);
+    }
+
+    .top{display:flex;justify-content:space-between;gap:10px}
+    .game{display:flex;gap:12px}
+
+    .icon{
+      width:44px;height:44px;
+      border-radius:16px;
+      display:grid;place-items:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.16);
+    }
+
+    .name{font-size:17px;font-weight:900}
+    .meta{color:var(--muted);font-size:13px}
+
+    .badge{
+      font-size:12px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+    }
+    .badge.online{border-color: rgba(45,255,179,.38); color:#caffee}
+    .badge.coming{border-color: rgba(0,229,255,.38); color:#c9faff}
+
+    .addrRow{margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+    code{
+      background: rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.12);
+      padding:8px 10px;
+      border-radius:14px;
+      font-size:13px;
+    }
+
+    .btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+
+    button,a.btn{
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:800;
+      text-decoration:none;
+    }
+
+    .primary{
+      border-color: rgba(0,229,255,.48);
+      background: linear-gradient(135deg, rgba(0,229,255,.22), rgba(124,92,255,.16));
+    }
+
+    footer{
+      max-width:1100px;
+      margin:0 auto;
+      padding:24px 18px 40px;
+      color:var(--muted);
+      border-top:1px solid rgba(255,255,255,.09);
+    }
+
+    @keyframes pulse{
+      0%,100%{ transform: scale(1); }
+      50%{ transform: scale(1.015); }
+    }
+
+    @media (max-width:640px){
+      .wordmark{ font-size:42px; letter-spacing:4px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo" id="logo" role="button" tabindex="0">
+      <div class="wordmark">James' Games</div>
+    </div>
+
+    <p class="subtitle">Servers, in one place. Click to copy the address or launch via Steam Connect when available.</p>
+
+    <div class="chipRow">
+      <span class="chip">Fast connect</span>
+      <span class="chip">Steam-friendly</span>
+      <span class="chip">More games coming</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <footer>
+    <div><strong>Admin note:</strong> Update servers by editing the <code>SERVERS</code> list in this file.</div>
+  </footer>
+
+  <script>
+    const SERVERS = [
+      {
+        game: "Necesse",
+        emoji: "🧰",
+        host: "52.21.23.13",
+        port: 14159,
+        status: "online",
+        notes: "Live now. Steam Connect supported.",
+        connectUrl: "steam://connect/52.21.23.13:14159"
+      },
+      {
+        game: "Enshrouded",
+        emoji: "🔥",
+        status: "coming",
+        notes: "Coming soon."
+      },
+      {
+        game: "Hytale",
+        emoji: "🧊",
+        status: "coming",
+        notes: "Coming soon."
+      }
+    ];
+
+    const grid = document.getElementById("grid");
+
+    function render(){
+      grid.innerHTML = "";
+      for (const s of SERVERS){
+        const card = document.createElement("div");
+        card.className = "card";
+        const addr = s.port ? `${s.host}:${s.port}` : "Coming soon";
+        card.innerHTML = `
+          <div class="top">
+            <div class="game">
+              <div class="icon">${s.emoji}</div>
+              <div>
+                <div class="name">${s.game}</div>
+                <div class="meta">${s.notes}</div>
+              </div>
+            </div>
+            <span class="badge ${s.status}">${s.status === "online" ? "Online" : "Coming soon"}</span>
+          </div>
+          <div class="addrRow"><code>${addr}</code></div>
+          <div class="btns">
+            ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}">Steam Connect</a>` : ``}
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    const logo = document.getElementById("logo");
+    logo.addEventListener("click", () => window.scrollTo({top:0, behavior:"smooth"}));
+    logo.addEventListener("keydown", e => { if(e.key === "Enter") window.scrollTo({top:0, behavior:"smooth"}); });
+
+    render();
+  </script>
+</body>
+</html>
