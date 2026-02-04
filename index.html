@@ -179,7 +179,16 @@
       font-size:13px;
     }
 
-    .btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center}
+
+    .secondary{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.045);
+    }
+
+    .secondary:hover{
+      box-shadow: 0 0 0 4px rgba(255,255,255,.06);
+    }
 
     button,a.btn{
       border:1px solid rgba(255,255,255,.16);
@@ -248,7 +257,7 @@
         port: 14159,
         status: "online",
         notes: "Live now. Steam Connect supported.",
-        connectUrl: "steam://run/1169370//+connect 52.21.23.13:14159"
+        connectUrl: "steam://run/1169040//+connect 52.21.23.13:14159"
       },
       {
         game: "Enshrouded",
@@ -265,6 +274,32 @@
     ];
 
     const grid = document.getElementById("grid");
+
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+    }
+
+    function render(){
+      try{
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+    }
 
     function render(){
       grid.innerHTML = "";
@@ -286,8 +321,41 @@
           <div class="addrRow"><code>${addr}</code></div>
           <div class="btns">
             ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}">Steam Connect</a><span class="meta" style="margin-left:8px">(opens Necesse)</span>` : ``}
+            ${s.status === "online" ? `<button class="btn secondary" data-copy="${addr}">Copy IP</button>` : ``}
           </div>
         `;
+        const copyBtn = card.querySelector("button[data-copy]");
+        if (copyBtn){
+          copyBtn.addEventListener("click", async () => {
+            await copyToClipboard(copyBtn.getAttribute("data-copy"));
+            const prev = copyBtn.textContent;
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => (copyBtn.textContent = prev), 900);
+          });
+        }
+
+        grid.appendChild(card);
+      }
+    }
+
+    const logo = document.getElementById("logo");
+    logo.addEventListener("click", () => window.scrollTo({top:0, behavior:"smooth"}));
+    logo.addEventListener("keydown", e => { if(e.key === "Enter") window.scrollTo({top:0, behavior:"smooth"}); });
+
+    render();
+  </script>
+</body>
+</html>
+
+        if (copyBtn){
+          copyBtn.addEventListener("click", async () => {
+            await copyToClipboard(copyBtn.getAttribute("data-copy"));
+            const prev = copyBtn.textContent;
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => (copyBtn.textContent = prev), 900);
+          });
+        }
+
         grid.appendChild(card);
       }
     }
