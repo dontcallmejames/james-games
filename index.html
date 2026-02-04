@@ -129,9 +129,11 @@
         host: "52.21.23.13",
         port: 14159,
         status: "online",
-        notes: "Live now. Steam Connect supported (auto-join).",
+        notes: "Live now. Steam auto-join can be finicky—use Copy IP if it doesn't join automatically.",
         // Necesse (game) app id, not the dedicated server tool
-        connectUrl: "steam://run/1169040//-connect%2052.21.23.13:14159"
+        connectUrl: "steam://run/1169040//-connect%2052.21.23.13%3A14159",
+        // Some systems handle Steam URI parsing differently; this alternate form sometimes works better
+        connectUrlAlt: "steam://rungameid/1169040//-connect%2052.21.23.13%3A14159"
       },
       { game: "Enshrouded", emoji: "🔥", status: "coming", notes: "Coming soon." },
       { game: "Hytale", emoji: "🧊", status: "coming", notes: "Coming soon." }
@@ -197,7 +199,8 @@
           <div class="addrRow"><code>${escapeHtml(addr)}</code></div>
 
           <div class="btns">
-            ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}">Steam Connect</a>` : ``}
+            ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}">Steam Auto-Join</a>` : ``}
+            ${s.connectUrlAlt ? `<a class="btn" href="${s.connectUrlAlt}">Alt Steam Link</a>` : ``}
             ${s.status === "online" ? `<button class="btn secondary" data-copy="${escapeHtml(addr)}">Copy IP</button>` : ``}
           </div>
         `;
