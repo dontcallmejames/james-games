@@ -14,6 +14,12 @@
       --text:#e9eeff; --muted:#a8b3d6;
       --accent:#7c5cff; --accent2:#00e5ff;
       --good:#2dffb3; --bad:#ff4d6d; --ring: rgba(124,92,255,.35);
+
+      /* Per‑game accents */
+      --nec:#ff8a3d;
+      --ens:#14e1c6;
+      --hyt:#8aa2ff;
+    }
     }
 
     *{box-sizing:border-box}
@@ -112,40 +118,203 @@
     .chipRow{ display:flex; justify-content:center; gap:8px; margin-top:14px; flex-wrap:wrap; }
     .chip{ font-size:12px; padding:6px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color:var(--muted); }
 
-    main{ max-width:1100px; margin:0 auto; padding:0 18px 40px; }
+    main{ max-width:1200px; margin:0 auto; padding:0 18px 40px; }
 
-    .grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap:14px; margin-top:22px; }
+    /* --- Dashboard (matches your reference layout) --- */
+    .statsRow{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin: 18px 0 22px;
+    }
+    .stat{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 18px 60px rgba(0,0,0,.30);
+      backdrop-filter: blur(10px);
+      min-width: 170px;
+    }
+    .statIcon{
+      width:34px; height:34px;
+      border-radius:12px;
+      display:grid; place-items:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .statNum{ font-weight:950; font-size:18px; line-height:1; }
+    .statLbl{ color:var(--muted); font-size:12px; margin-top:2px; }
 
-    .card{ border-radius:20px; padding:16px; border:1px solid var(--border); background: linear-gradient(180deg, var(--card), var(--card2)); box-shadow: 0 14px 44px rgba(0,0,0,.32); }
-
-    .top{ display:flex; justify-content:space-between; gap:10px; }
-    .game{ display:flex; gap:12px; }
-
-    .icon{ width:44px; height:44px; border-radius:16px; display:grid; place-items:center; background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); }
-
-    .name{ font-size:17px; font-weight:900; }
-    .meta{ color:var(--muted); font-size:13px; }
-
-    .badge{ font-size:12px; padding:7px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); }
-    .badge.online{ border-color: rgba(45,255,179,.38); color:#caffee; }
-    .badge.coming{ border-color: rgba(0,229,255,.38); color:#c9faff; }
-
-    .addrRow{ margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    code{ background: rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.12); padding:8px 10px; border-radius:14px; font-size:13px; }
-
-    .btns{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; align-items:center; }
-
-    button, a.btn{
-      border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color:var(--text);
-      padding:10px 14px; border-radius:14px; cursor:pointer; font-weight:800; text-decoration:none;
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap:18px;
+      margin-top: 0;
     }
 
-    .primary{ border-color: rgba(0,229,255,.48); background: linear-gradient(135deg, rgba(0,229,255,.22), rgba(124,92,255,.16)); }
-    .secondary{ border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.045); }
+    .card{
+      border-radius:26px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(900px 420px at 10% 0%, rgba(124,92,255,.12), transparent 55%),
+        radial-gradient(900px 420px at 90% 10%, rgba(0,229,255,.08), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      box-shadow: 0 22px 70px rgba(0,0,0,.42);
+      backdrop-filter: blur(12px);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius:28px;
+      pointer-events:none;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .cardHeader{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .cardTitleRow{ display:flex; gap:12px; align-items:center; }
+
+    .gameIcon{
+      width:46px; height:46px;
+      border-radius:16px;
+      display:grid; place-items:center;
+      background: color-mix(in srgb, var(--gameAccent) 20%, rgba(255,255,255,.06));
+      border:1px solid color-mix(in srgb, var(--gameAccent) 45%, rgba(255,255,255,.14));
+      font-size:22px;
+    }
+    }
+
+    .titleWrap{ display:flex; flex-direction:column; gap:2px; }
+    .gameName{ font-size:18px; font-weight:950; letter-spacing:.2px; }
+    .gameType{ color:var(--muted); font-size:12px; }
+
+    .statusPill{
+      font-size:12px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .dot{ width:8px; height:8px; border-radius:999px; background: rgba(255,255,255,.35); }
+
+    .status-online{ border-color: rgba(45,255,179,.30); color:#caffee; }
+    .status-online .dot{ background: rgba(45,255,179,.90); }
+
+    .status-coming{ border-color: rgba(0,229,255,.25); color:#c9faff; }
+    .status-coming .dot{ background: rgba(0,229,255,.85); }
+
+    .status-maintenance{ border-color: rgba(255,209,102,.28); color:#ffe9b2; }
+    .status-maintenance .dot{ background: rgba(255,209,102,.9); }
+
+    .status-offline{ border-color: rgba(255,77,109,.30); color:#ffd1da; }
+    .status-offline .dot{ background: rgba(255,77,109,.9); }
+
+    .metrics{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      margin-top:14px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .m{ display:flex; gap:8px; align-items:center; }
+    .mI{ opacity:.9; }
+
+    .addrBox{
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+    }
+    .addrLeft{ display:flex; gap:10px; align-items:center; min-width:0; }
+    .addrTxt{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: var(--text);
+      font-size:13px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width: 100%;
+    }
+    .iconBtn{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      flex: 0 0 auto;
+    }
+    .iconBtn:hover{ box-shadow:0 0 0 4px var(--ring); border-color: rgba(0,229,255,.30); }
+
+    .cta{
+      margin-top:14px;
+      width:100%;
+      border-radius:16px;
+      padding:12px 14px;
+      font-weight:950;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+    .cta:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
+
+    .ctaOnline{
+      background: linear-gradient(90deg, color-mix(in srgb, var(--gameAccent) 40%, transparent), rgba(124,92,255,.12));
+      border-color: color-mix(in srgb, var(--gameAccent) 55%, transparent);
+    }
+    .ctaComing{ background: rgba(255,255,255,.05); }
+
+    .rowActions{ margin-top:10px; display:flex; gap:10px; justify-content:center; }
+    a.smallLink{
+      color: var(--muted);
+      font-size:12px;
+      text-decoration:none;
+      border-bottom:1px dashed rgba(255,255,255,.18);
+    }
+    a.smallLink:hover{ color: var(--text); border-bottom-color: rgba(0,229,255,.35); }
+
+    @media (max-width:640px){
+      .grid{ grid-template-columns: 1fr; }
+      .stat{ min-width: 150px; }
+    }
 
     footer{ max-width:1100px; margin:0 auto; padding:24px 18px 40px; color:var(--muted); border-top:1px solid rgba(255,255,255,.09); }
 
     @keyframes pulse{ 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.015); } }
+
+    /* Online card glow */
+    @keyframes onlineGlow{
+      0%,100%{ box-shadow: 0 22px 70px rgba(0,0,0,.42); }
+      50%{ box-shadow: 0 22px 70px rgba(0,0,0,.42), 0 0 28px color-mix(in srgb, var(--gameAccent) 45%, transparent); }
+    }
+    .card.online{ animation: onlineGlow 3.5s ease-in-out infinite; } 50%{ transform: scale(1.015); } }
 
     @media (max-width:640px){ .wordmark{ font-size:42px; letter-spacing:4px; } }
   </style>
@@ -157,7 +326,14 @@
     <div class="chipRow"><span class="chip">Fast connect</span><span class="chip">Steam-friendly</span><span class="chip">More games coming</span></div>
   </header>
 
-  <main><div class="grid" id="grid"></div></main>
+  <main>
+    <div class="statsRow" id="statsRow">
+      <div class="stat"><div class="statIcon">🗄️</div><div><div class="statNum" id="stOnline">—</div><div class="statLbl">Servers Online</div></div></div>
+      <div class="stat"><div class="statIcon">👥</div><div><div class="statNum" id="stPlayers">—</div><div class="statLbl">Active Players</div></div></div>
+      <div class="stat"><div class="statIcon">🌐</div><div><div class="statNum" id="stPing">—</div><div class="statLbl">Avg. Ping</div></div></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </main>
 
   <div class="modalBackdrop" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="modal">
@@ -180,19 +356,41 @@
   <footer><div><strong>Admin note:</strong> Update servers by editing the <code>SERVERS</code> list in this file.</div></footer>
 
   <script>
+    const ICONS = {
+      Necesse: "🏰",
+      Enshrouded: "🔥",
+      Hytale: "💎"
+    };
+
+    const ACCENTS = {
+      Necesse: "--nec",
+      Enshrouded: "--ens",
+      Hytale: "--hyt"
+    };
+
+    const CTA_TEXT = {
+      Necesse: "Enter World",
+      Enshrouded: "Enter Realm",
+      Hytale: "Begin Adventure"
+    };
+
     const SERVERS = [
       {
         game: "Necesse",
+        type: "Necesse",
         emoji: "🧰",
         host: "52.21.23.13",
         port: 14159,
         status: "online",
-        notes: "Live now. Steam auto-join can be finicky—use Copy IP if it doesn't join automatically.",
-        // Necesse (game) app id, not the dedicated server tool
+        // Optional: fill these in later for the full dashboard look
+        playersCurrent: null,
+        playersMax: null,
+        pingMs: null,
+        notes: "Join: Multiplayer → Join by IP (paste address). Password prompt will appear if needed.",
         connectUrl: "steam://run/1169040//-connect%2052.21.23.13%3A14159"
       },
-      { game: "Enshrouded", emoji: "🔥", status: "coming", notes: "Coming soon." },
-      { game: "Hytale", emoji: "🧊", status: "coming", notes: "Coming soon." }
+      { game: "Enshrouded", type: "Enshrouded", emoji: "🔥", status: "coming", notes: "Coming soon." },
+      { game: "Hytale", type: "Hytale", emoji: "🧊", status: "coming", notes: "Coming soon." }
     ];
 
     const grid = document.getElementById("grid");
@@ -212,7 +410,17 @@
     }
 
     function statusText(status){
-      return status === "online" ? "Online" : "Coming soon";
+      if (status === "online") return "Online";
+      if (status === "maintenance") return "Maintenance";
+      if (status === "offline") return "Offline";
+      return "Coming soon";
+    }
+
+    function statusClass(status){
+      if (status === "online") return "status-online";
+      if (status === "maintenance") return "status-maintenance";
+      if (status === "offline") return "status-offline";
+      return "status-coming";
     }
 
     function addressOf(s){
@@ -237,30 +445,77 @@
     function render(){
       grid.innerHTML = "";
 
+      // Stats (best-effort; uses optional fields)
+      const online = SERVERS.filter(s => s.status === "online").length;
+      const total = SERVERS.length;
+
+      const playerNums = SERVERS
+        .filter(s => s.status === "online" && typeof s.playersCurrent === "number")
+        .map(s => s.playersCurrent);
+      const playersSum = playerNums.length ? playerNums.reduce((a,b)=>a+b,0) : null;
+
+      const pings = SERVERS
+        .filter(s => s.status === "online" && typeof s.pingMs === "number")
+        .map(s => s.pingMs);
+      const pingAvg = pings.length ? Math.round(pings.reduce((a,b)=>a+b,0) / pings.length) : null;
+
+      document.getElementById("stOnline").textContent = `${online}/${total}`;
+      document.getElementById("stPlayers").textContent = playersSum !== null ? String(playersSum) : "—";
+      document.getElementById("stPing").textContent = pingAvg !== null ? `${pingAvg}ms` : "—";
+
       for (const s of SERVERS){
         const addr = addressOf(s);
+        const hasAddr = s.status === "online";
+
+        const playersText = (typeof s.playersCurrent === "number" && typeof s.playersMax === "number")
+          ? `${s.playersCurrent}/${s.playersMax} Players`
+          : "— Players";
+
+        const pingText = (typeof s.pingMs === "number") ? `${s.pingMs}ms` : "—";
 
         const card = document.createElement("div");
         card.className = "card";
+        if (s.status === "online") card.classList.add("online");
+        if (ACCENTS[s.game]){
+          card.style.setProperty("--gameAccent", `var(${ACCENTS[s.game]})`);
+        }
+
+        const ctaLabel = s.status === "online"
+          ? (CTA_TEXT[s.game] || "Connect Now")
+          : (s.status === "maintenance" ? "Under Maintenance" : (s.status === "offline" ? "Server Offline" : "Coming Soon"));
 
         card.innerHTML = `
-          <div class="top">
-            <div class="game">
-              <div class="icon" aria-hidden="true">${escapeHtml(s.emoji || "🎮")}</div>
-              <div>
-                <div class="name">${escapeHtml(s.game)}</div>
-                <div class="meta">${escapeHtml(s.notes || "")}</div>
+          <div class="cardHeader">
+            <div class="cardTitleRow">
+              <div class="gameIcon" aria-hidden="true">${escapeHtml(ICONS[s.game] || "🎮")}</div>
+              <div class="titleWrap">
+                <div class="gameName">${escapeHtml(s.game)}</div>
+                <div class="gameType">${escapeHtml(s.type || "")}</div>
               </div>
             </div>
-            <span class="badge ${escapeHtml(s.status)}">${escapeHtml(statusText(s.status))}</span>
+            <div class="statusPill ${statusClass(s.status)}"><span class="dot"></span>${escapeHtml(statusText(s.status))}</div>
           </div>
 
-          <div class="addrRow"><code>${escapeHtml(addr)}</code></div>
+          <div class="metrics">
+            <div class="m"><span class="mI">👥</span><span>${escapeHtml(playersText)}</span></div>
+            <div class="m"><span class="mI">📶</span><span>${escapeHtml(pingText)}</span></div>
+          </div>
 
-          <div class="btns">
-            ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}" title="Attempts to launch the game via Steam and auto-join. May not work on all systems.">Open in Steam</a>` : ``}
-            ${s.status === "online" ? `<button class="btn secondary" data-copy="${escapeHtml(addr)}" title="Always works. Paste this address into the in-game join menu.">Copy IP</button>` : ``}
-            <button class="btn" data-help="${escapeHtml(s.game)}">How to join</button>
+          <div class="addrBox">
+            <div class="addrLeft">
+              <span class="mI">🧾</span>
+              <div class="addrTxt" title="${escapeHtml(hasAddr ? addr : "Coming soon")}">${escapeHtml(hasAddr ? addr : "Coming soon")}</div>
+            </div>
+            <button class="iconBtn" ${hasAddr ? `data-copy="${escapeHtml(addr)}"` : "disabled"} title="Copy address">⧉</button>
+          </div>
+
+          <button class="cta ${s.status === "online" ? "ctaOnline" : "ctaComing"}" ${s.status === "online" ? `data-connect="${escapeHtml(addr)}"` : "disabled"}>
+            ⚡ ${escapeHtml(ctaLabel)}
+          </button>
+
+          <div class="rowActions">
+            ${s.connectUrl ? `<a class="smallLink" href="${s.connectUrl}">Open in Steam</a>` : ``}
+            <a class="smallLink" href="#" data-help="${escapeHtml(s.game)}">How to join</a>
           </div>
         `;
 
@@ -268,15 +523,27 @@
         if (copyBtn){
           copyBtn.addEventListener("click", async () => {
             await copyToClipboard(copyBtn.getAttribute("data-copy"));
-            const prev = copyBtn.textContent;
-            copyBtn.textContent = "Copied!";
-            setTimeout(() => (copyBtn.textContent = prev), 900);
+            copyBtn.textContent = "✓";
+            setTimeout(() => (copyBtn.textContent = "⧉"), 900);
           });
         }
 
-        const helpBtn = card.querySelector("button[data-help]");
-        if (helpBtn){
-          helpBtn.addEventListener("click", () => openHelpForGame(s.game));
+        const connectBtn = card.querySelector("button[data-connect]");
+        if (connectBtn){
+          connectBtn.addEventListener("click", async () => {
+            await copyToClipboard(connectBtn.getAttribute("data-connect"));
+            const prev = connectBtn.textContent;
+            connectBtn.textContent = "✓ Copied IP — paste in-game";
+            setTimeout(() => (connectBtn.textContent = prev), 1100);
+          });
+        }
+
+        const helpLink = card.querySelector("a[data-help]");
+        if (helpLink){
+          helpLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            openHelpForGame(s.game);
+          });
         }
 
         grid.appendChild(card);
