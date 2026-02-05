@@ -71,6 +71,44 @@
     .help{ margin-left:10px; border:1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.05); color:var(--text); padding:6px 10px; border-radius:999px; cursor:pointer; font-weight:800; font-size:12px; }
     .help:hover{ box-shadow:0 0 0 4px var(--ring); }
 
+    /* Modal */
+    .modalBackdrop{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .modalBackdrop.show{ display:flex; }
+
+    .modal{
+      width:min(720px, 100%);
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.16);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      box-shadow: 0 30px 120px rgba(0,0,0,.65);
+      padding:16px;
+    }
+    .modalHeader{ display:flex; justify-content:space-between; gap:12px; align-items:center; }
+    .modalBody{ color: var(--muted); font-size:13px; line-height:1.55; margin-top:10px; }
+    .modalBody ol{ margin:10px 0 0 18px; }
+    .modalBody li{ margin:6px 0; }
+    .modalClose{
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      border-radius:14px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:900;
+    }
+    .k{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; color: var(--text); }
+    .note{ margin-top:10px; padding:10px 12px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.20); }
+
     .chipRow{ display:flex; justify-content:center; gap:8px; margin-top:14px; flex-wrap:wrap; }
     .chip{ font-size:12px; padding:6px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color:var(--muted); }
 
@@ -121,20 +159,20 @@
 
   <main><div class="grid" id="grid"></div></main>
 
-  <div class="modalBackdrop" id="helpModal" role="dialog" aria-modal="true">
+  <div class="modalBackdrop" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="modal">
       <div class="modalHeader">
-        <strong>How to join</strong>
-        <button class="modalClose" id="helpClose">✕</button>
+        <strong id="helpTitle">How to join</strong>
+        <button class="modalClose" id="helpClose" type="button" aria-label="Close">✕</button>
       </div>
-      <div class="modalBody">
+      <div class="modalBody" id="helpBody">
         <ol>
-          <li>Choose a game card.</li>
-          <li>Click <code>Copy IP</code>.</li>
+          <li>Pick a game card.</li>
+          <li>Click <span class="k">Copy IP</span>.</li>
           <li>Open the game and paste the address in its Join/Multiplayer screen.</li>
           <li>Enter the server password when prompted.</li>
         </ol>
-        <p><strong>Note:</strong> Steam links open the correct game but may not auto-connect on all systems.</p>
+        <div class="note"><strong>Steam links:</strong> They open the correct game, but auto-connect may not work on all systems.</div>
       </div>
     </div>
   </div>
@@ -238,20 +276,7 @@
 
         const helpBtn = card.querySelector("button[data-help]");
         if (helpBtn){
-          helpBtn.addEventListener("click", () => {
-            alert(
-              s.game === "Necesse"
-                ? "How to join Necesse:
-
-1) Click ‘Open in Steam’ (may or may not auto-join)
-2) If it doesn’t join automatically, click ‘Copy IP’
-3) In Necesse: Multiplayer → Join via IP → Paste → Enter
-4) Enter the server password when prompted"
-                : "This server is coming soon.
-
-Connection instructions will appear here once it’s live."
-            );
-          });
+          helpBtn.addEventListener("click", () => openHelpForGame(s.game));
         }
 
         grid.appendChild(card);
@@ -272,9 +297,35 @@ Connection instructions will appear here once it’s live."
       }
     });
 
-    helpBtnGlobal.addEventListener("click", ()=>helpModal.classList.add("show"));
-    helpClose.addEventListener("click", ()=>helpModal.classList.remove("show"));
-    helpModal.addEventListener("click", e=>{ if(e.target===helpModal) helpModal.classList.remove("show"); });
+    function openHelp(){ helpModal.classList.add("show"); helpClose.focus(); }
+    function closeHelp(){ helpModal.classList.remove("show"); }
+
+    function openHelpForGame(game){
+      if (game === "Necesse"){
+        helpTitle.textContent = "How to join — Necesse";
+        helpBody.innerHTML = `
+          <ol>
+            <li>Click <span class="k">Copy IP</span> on the Necesse card.</li>
+            <li>Open Necesse.</li>
+            <li>Go to <span class="k">Multiplayer</span> → <span class="k">Join by IP</span>, paste the address, and join.</li>
+            <li>Enter the server password when prompted.</li>
+          </ol>
+          <div class="note"><strong>Open in Steam:</strong> launches the game, but Steam may ignore auto-connect arguments. Copy IP is the reliable path.</div>
+        `;
+      } else {
+        helpTitle.textContent = `How to join — ${game}`;
+        helpBody.innerHTML = `
+          <p>This server is marked <strong>Coming soon</strong>.</p>
+          <p>Once it’s live, this modal will show the exact in-game join steps here.</p>
+        `;
+      }
+      openHelp();
+    }
+
+    helpBtnGlobal.addEventListener("click", openHelp);
+    helpClose.addEventListener("click", closeHelp);
+    helpModal.addEventListener("click", (e) => { if (e.target === helpModal) closeHelp(); });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape" && helpModal.classList.contains("show")) closeHelp(); });
 
     render();
   </script>
