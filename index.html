@@ -67,7 +67,9 @@
       text-shadow: 0 0 18px rgba(0,229,255,.85), 0 0 48px rgba(124,92,255,.75), 0 18px 60px rgba(0,0,0,.75);
     }
 
-    .subtitle{ margin:22px auto 0; color:var(--muted); font-size:15px; max-width:70ch; }
+    .subtitle{ margin:22px auto 0; color:var(--muted); font-size:15px; max-width:78ch; }
+    .help{ margin-left:10px; border:1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.05); color:var(--text); padding:6px 10px; border-radius:999px; cursor:pointer; font-weight:800; font-size:12px; }
+    .help:hover{ box-shadow:0 0 0 4px var(--ring); }
 
     .chipRow{ display:flex; justify-content:center; gap:8px; margin-top:14px; flex-wrap:wrap; }
     .chip{ font-size:12px; padding:6px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color:var(--muted); }
@@ -113,11 +115,29 @@
 <body>
   <header>
     <div class="logo" id="logo" role="button" tabindex="0"><div class="wordmark">James' Games</div></div>
-    <p class="subtitle">Servers, in one place. Click to copy the address or launch via Steam Connect when available.</p>
+    <p class="subtitle">Servers, in one place. Copy the address to join (recommended), or open the game via Steam.<button class="help" id="helpBtn" type="button" aria-haspopup="dialog" aria-controls="helpModal">How to join?</button></p>
     <div class="chipRow"><span class="chip">Fast connect</span><span class="chip">Steam-friendly</span><span class="chip">More games coming</span></div>
   </header>
 
   <main><div class="grid" id="grid"></div></main>
+
+  <div class="modalBackdrop" id="helpModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalHeader">
+        <strong>How to join</strong>
+        <button class="modalClose" id="helpClose">✕</button>
+      </div>
+      <div class="modalBody">
+        <ol>
+          <li>Choose a game card.</li>
+          <li>Click <code>Copy IP</code>.</li>
+          <li>Open the game and paste the address in its Join/Multiplayer screen.</li>
+          <li>Enter the server password when prompted.</li>
+        </ol>
+        <p><strong>Note:</strong> Steam links open the correct game but may not auto-connect on all systems.</p>
+      </div>
+    </div>
+  </div>
 
   <footer><div><strong>Admin note:</strong> Update servers by editing the <code>SERVERS</code> list in this file.</div></footer>
 
@@ -131,9 +151,7 @@
         status: "online",
         notes: "Live now. Steam auto-join can be finicky—use Copy IP if it doesn't join automatically.",
         // Necesse (game) app id, not the dedicated server tool
-        connectUrl: "steam://run/1169040//-connect%2052.21.23.13%3A14159",
-        // Some systems handle Steam URI parsing differently; this alternate form sometimes works better
-        connectUrlAlt: "steam://rungameid/1169040//-connect%2052.21.23.13%3A14159"
+        connectUrl: "steam://run/1169040//-connect%2052.21.23.13%3A14159"
       },
       { game: "Enshrouded", emoji: "🔥", status: "coming", notes: "Coming soon." },
       { game: "Hytale", emoji: "🧊", status: "coming", notes: "Coming soon." }
@@ -141,6 +159,9 @@
 
     const grid = document.getElementById("grid");
     const logo = document.getElementById("logo");
+    const helpBtnGlobal = document.getElementById("helpBtn");
+    const helpModal = document.getElementById("helpModal");
+    const helpClose = document.getElementById("helpClose");
 
     function escapeHtml(str){
       return String(str).replace(/[&<>"']/g, (m) => ({
@@ -199,9 +220,9 @@
           <div class="addrRow"><code>${escapeHtml(addr)}</code></div>
 
           <div class="btns">
-            ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}">Steam Auto-Join</a>` : ``}
-            ${s.connectUrlAlt ? `<a class="btn" href="${s.connectUrlAlt}">Alt Steam Link</a>` : ``}
-            ${s.status === "online" ? `<button class="btn secondary" data-copy="${escapeHtml(addr)}">Copy IP</button>` : ``}
+            ${s.connectUrl ? `<a class="btn primary" href="${s.connectUrl}" title="Attempts to launch the game via Steam and auto-join. May not work on all systems.">Open in Steam</a>` : ``}
+            ${s.status === "online" ? `<button class="btn secondary" data-copy="${escapeHtml(addr)}" title="Always works. Paste this address into the in-game join menu.">Copy IP</button>` : ``}
+            <button class="btn" data-help="${escapeHtml(s.game)}">How to join</button>
           </div>
         `;
 
@@ -212,6 +233,24 @@
             const prev = copyBtn.textContent;
             copyBtn.textContent = "Copied!";
             setTimeout(() => (copyBtn.textContent = prev), 900);
+          });
+        }
+
+        const helpBtn = card.querySelector("button[data-help]");
+        if (helpBtn){
+          helpBtn.addEventListener("click", () => {
+            alert(
+              s.game === "Necesse"
+                ? "How to join Necesse:
+
+1) Click ‘Open in Steam’ (may or may not auto-join)
+2) If it doesn’t join automatically, click ‘Copy IP’
+3) In Necesse: Multiplayer → Join via IP → Paste → Enter
+4) Enter the server password when prompted"
+                : "This server is coming soon.
+
+Connection instructions will appear here once it’s live."
+            );
           });
         }
 
@@ -232,6 +271,10 @@
         scrollTopSmooth();
       }
     });
+
+    helpBtnGlobal.addEventListener("click", ()=>helpModal.classList.add("show"));
+    helpClose.addEventListener("click", ()=>helpModal.classList.remove("show"));
+    helpModal.addEventListener("click", e=>{ if(e.target===helpModal) helpModal.classList.remove("show"); });
 
     render();
   </script>
