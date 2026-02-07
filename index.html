@@ -8,18 +8,23 @@
 
   <style>
     :root{
-      --bg0:#050713; --bg1:#0a0f22;
-      --card: rgba(255,255,255,.06); --card2: rgba(255,255,255,.035);
+      --bg0:#050713;
+      --bg1:#0a0f22;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.035);
       --border: rgba(255,255,255,.12);
-      --text:#e9eeff; --muted:#a8b3d6;
-      --accent:#7c5cff; --accent2:#00e5ff;
-      --good:#2dffb3; --bad:#ff4d6d; --ring: rgba(124,92,255,.35);
+      --text:#e9eeff;
+      --muted:#a8b3d6;
+      --accent:#7c5cff;
+      --accent2:#00e5ff;
+      --good:#2dffb3;
+      --bad:#ff4d6d;
+      --ring: rgba(124,92,255,.35);
 
-      /* Per‑game accents */
+      /* Per-game accents */
       --nec:#ff8a3d;
       --ens:#14e1c6;
       --hyt:#8aa2ff;
-    }
     }
 
     *{box-sizing:border-box}
@@ -191,7 +196,6 @@
       border:1px solid color-mix(in srgb, var(--gameAccent) 45%, rgba(255,255,255,.14));
       font-size:22px;
     }
-    }
 
     .titleWrap{ display:flex; flex-direction:column; gap:2px; }
     .gameName{ font-size:18px; font-weight:950; letter-spacing:.2px; }
@@ -314,7 +318,7 @@
       0%,100%{ box-shadow: 0 22px 70px rgba(0,0,0,.42); }
       50%{ box-shadow: 0 22px 70px rgba(0,0,0,.42), 0 0 28px color-mix(in srgb, var(--gameAccent) 45%, transparent); }
     }
-    .card.online{ animation: onlineGlow 3.5s ease-in-out infinite; } 50%{ transform: scale(1.015); } }
+    .card.online{ animation: onlineGlow 3.5s ease-in-out infinite; }
 
     @media (max-width:640px){ .wordmark{ font-size:42px; letter-spacing:4px; } }
   </style>
@@ -379,7 +383,7 @@
         game: "Necesse",
         type: "Necesse",
         emoji: "🧰",
-        host: "52.21.23.13",
+        host: "necesse.dontcallmejames.com",
         port: 14159,
         status: "online",
         // Optional: fill these in later for the full dashboard look
@@ -387,7 +391,7 @@
         playersMax: null,
         pingMs: null,
         notes: "Join: Multiplayer → Join by IP (paste address). Password prompt will appear if needed.",
-        connectUrl: "steam://run/1169040//-connect%2052.21.23.13%3A14159"
+        connectUrl: "steam://run/1169040//-connect%20necesse.dontcallmejames.com%3A14159"
       },
       { game: "Enshrouded", type: "Enshrouded", emoji: "🔥", status: "coming", notes: "Coming soon." },
       { game: "Hytale", type: "Hytale", emoji: "🧊", status: "coming", notes: "Coming soon." }
