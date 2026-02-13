@@ -59,35 +59,29 @@
       text-align:center;
       position:relative;
       overflow:hidden;
-      border-bottom:1px solid rgba(255,255,255,.12);
+      /* No divider line under the banner */
+      border-bottom:none;
     }
 
     .headerBanner{
       width:100%;
-      /* Preserve the banner’s native aspect ratio (2032×528 ≈ 3.85:1) */
-      aspect-ratio: 4064 / 1056;
+      /* Banner is already designed with its own vignette—avoid extra shading */
+      aspect-ratio: 2032 / 528;
       height: auto;
-      max-height: 260px;
-      min-height: 140px;
+      max-height: 280px;
+      min-height: 150px;
 
       background-image: url("jg-banner.png");
-      /* Show the whole banner (no cropping). */
-      background-size: contain;
+      /* Fill the header cleanly (no letterbox bars). */
+      background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      /* Fill behind any letterboxing */
-      background-color: rgba(0,0,0,.18);
 
       position: relative;
     }
 
-    /* Banner overlay: subtle vignette only (keeps art readable) */
-    .headerOverlay{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background: radial-gradient(900px 260px at 50% 70%, rgba(0,0,0,.18), rgba(0,0,0,.55));
-    }
+    /* Banner overlay: disabled (image already has a vignette) */
+    .headerOverlay{ display:none; }
 
     .headerContent{
       max-width:1100px;
@@ -111,10 +105,12 @@
     }
 
     header::after{
-      content:""; position:absolute; inset:0; pointer-events:none; opacity:.35;
-      background:
-        radial-gradient(800px 260px at 50% 120%, rgba(124,92,255,.25), transparent 70%),
-        radial-gradient(700px 220px at 50% 115%, rgba(0,229,255,.18), transparent 72%);
+      /* Remove extra haze over the banner to avoid a "shaded border" look */
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:0;
     }
 
     .logo{
