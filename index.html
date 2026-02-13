@@ -531,7 +531,7 @@
           </button>
 
           <div class="rowActions">
-            ${s.connectUrl ? `<a class="smallLink" href="${s.connectUrl}">Open in Steam</a>` : ``}
+            ${s.connectUrl ? `<button class="smallLink" type="button" data-steam="${escapeHtml(s.connectUrl)}">Open in Steam</button>` : ``}
             <a class="smallLink" href="#" data-help="${escapeHtml(s.game)}">How to join</a>
           </div>
         `;
@@ -552,6 +552,13 @@
             const prev = connectBtn.textContent;
             connectBtn.textContent = "✓ Copied IP — paste in-game";
             setTimeout(() => (connectBtn.textContent = prev), 1100);
+          });
+        }
+
+        const steamBtn = card.querySelector("button[data-steam]");
+        if (steamBtn){
+          steamBtn.addEventListener("click", () => {
+            window.location.href = steamBtn.getAttribute("data-steam");
           });
         }
 
@@ -615,4 +622,5 @@
   </script>
 </body>
 </html>
+
 
