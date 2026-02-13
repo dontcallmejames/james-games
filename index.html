@@ -123,6 +123,14 @@
     .chipRow{ display:flex; justify-content:center; gap:8px; margin-top:14px; flex-wrap:wrap; }
     .chip{ font-size:12px; padding:6px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color:var(--muted); }
 
+    .chip.discord{
+      color: #eaf2ff;
+      border-color: rgba(88,101,242,.45);
+      background: linear-gradient(135deg, rgba(88,101,242,.25), rgba(124,92,255,.20));
+      font-weight:900;
+    }
+    .chip.discord:hover{ box-shadow:0 0 0 4px rgba(88,101,242,.35); }
+
     main{ max-width:1200px; margin:0 auto; padding:0 18px 40px; }
 
     /* --- Dashboard (matches your reference layout) --- */
@@ -327,7 +335,12 @@
   <header>
     <div class="logo" id="logo" role="button" tabindex="0"><div class="wordmark">James' Games</div></div>
     <p class="subtitle">Servers, in one place. Copy the address to join (recommended), or open the game via Steam.<button class="help" id="helpBtn" type="button" aria-haspopup="dialog" aria-controls="helpModal">How to join?</button></p>
-    <div class="chipRow"><span class="chip">Fast connect</span><span class="chip">Steam-friendly</span><span class="chip">More games coming</span></div>
+    <div class="chipRow">
+      <span class="chip">Fast connect</span>
+      <span class="chip">Steam-friendly</span>
+      <span class="chip">More games coming</span>
+      <a class="chip discord" id="discordBtn" href="https://discord.gg/JzhCXC2wGk" target="_blank" rel="noopener">💬 Join Discord</a>
+    </div>
   </header>
 
   <main>
@@ -602,3 +615,4 @@
   </script>
 </body>
 </html>
+
