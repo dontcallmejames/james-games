@@ -198,6 +198,7 @@
     }
 
     .card{
+      --gameAccent: var(--accent);
       border-radius:26px;
       padding:18px;
       border:1px solid rgba(255,255,255,.10);
@@ -443,8 +444,8 @@
     ];
 
     const grid = document.getElementById("grid");
-    const logo = document.getElementById("logo");
     const helpBtnGlobal = document.getElementById("helpBtn");
+    const headerBanner = document.querySelector(".headerBanner");
     const helpModal = document.getElementById("helpModal");
     const helpClose = document.getElementById("helpClose");
 
@@ -610,15 +611,11 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    // Clickable logo: scroll to top (keyboard accessible)
-    logo.setAttribute("aria-label", "Scroll to top");
-    logo.addEventListener("click", scrollTopSmooth);
-    logo.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " "){
-        e.preventDefault();
-        scrollTopSmooth();
-      }
-    });
+    // Clickable banner: scroll to top
+    if (headerBanner){
+      headerBanner.style.cursor = "pointer";
+      headerBanner.addEventListener("click", scrollTopSmooth);
+    }
 
     function openHelp(){ helpModal.classList.add("show"); helpClose.focus(); }
     function closeHelp(){ helpModal.classList.remove("show"); }
