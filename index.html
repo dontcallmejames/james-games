@@ -3,534 +3,872 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>James' Games</title>
-  <meta name="description" content="James' Games — one place to find and connect to our servers." />
+  <title>JAMES' GAMES // INSERT COIN</title>
+  <meta name="description" content="James' Games — pick a cabinet and press start." />
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      /* Tuned to match the banner's purple/blue synthwave palette */
-      --bg0:#050410;
-      --bg1:#070c1d;
-      --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.035);
-      --border: rgba(255,255,255,.12);
-      --text:#e9eeff;
-      --muted:#a8b3d6;
-      --accent:#7c5cff;
-      --accent2:#00e5ff;
-      --good:#2dffb3;
-      --bad:#ff4d6d;
-      --ring: rgba(124,92,255,.35);
+      --bg:           #09031a;
+      --bg-deep:      #050112;
+      --panel:        #0e0524;
+      --panel-up:     #14092e;
+      --panel-hi:     #1a0b38;
+      --border:       #2a1452;
+      --border-br:    #3d1d70;
 
-      /* Per-game accents */
-      --nec:#ff8a3d;
-      --ens:#14e1c6;
-      --hyt:#8aa2ff;
-      --wnd:#f0b64e;
+      --magenta:      #ff2e88;
+      --magenta-glow: 0 0 6px #ff2e88, 0 0 18px rgba(255,46,136,.55), 0 0 34px rgba(255,46,136,.35);
+      --magenta-dim:  #a11556;
+
+      --cyan:         #00e8ff;
+      --cyan-glow:    0 0 6px #00e8ff, 0 0 16px rgba(0,232,255,.55), 0 0 32px rgba(0,232,255,.3);
+      --cyan-dim:     #0077a0;
+
+      --yellow:       #ffd93d;
+      --yellow-glow:  0 0 6px #ffd93d, 0 0 18px rgba(255,217,61,.5);
+
+      --green:        #3dff7f;
+      --green-glow:   0 0 6px #3dff7f, 0 0 18px rgba(61,255,127,.55);
+
+      --red:          #ff3d5a;
+      --red-glow:     0 0 6px #ff3d5a, 0 0 16px rgba(255,61,90,.5);
+
+      --text:         #f4ecff;
+      --dim:          #c4a8e0;
+      --ghost:        #6b5285;
+      --whisper:      #38254e;
+
+      --mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --crt:   "VT323", "JetBrains Mono", monospace;
+      --pixel: "Press Start 2P", "VT323", monospace;
     }
 
-    *{box-sizing:border-box}
+    *{ box-sizing: border-box; }
+    html,body{ margin:0; padding:0; }
 
     body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
+      font-family: var(--crt);
+      font-size: 20px;
+      line-height: 1.4;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* CRT backdrop — deep purple with two distant neon halos */
+    .crt-bg{
+      position: fixed; inset: 0;
+      z-index: 0;
+      pointer-events: none;
       background:
-        radial-gradient(900px 650px at 18% -10%, rgba(255, 67, 198, .22), transparent 60%),
-        radial-gradient(900px 650px at 85% -5%, rgba(0,229,255,.16), transparent 58%),
-        radial-gradient(900px 650px at 55% 15%, rgba(124,92,255,.22), transparent 62%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      min-height:100vh;
+        radial-gradient(1100px 700px at 12% -10%, rgba(255,46,136,.18), transparent 55%),
+        radial-gradient(1100px 700px at 88% 110%, rgba(0,232,255,.14), transparent 55%),
+        radial-gradient(900px 600px at 50% 60%, rgba(255,217,61,.05), transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
     }
 
-    body::before{
-      content:"";
-      position:fixed; inset:0; pointer-events:none;
-      background: repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 2px, transparent 6px);
-      opacity:.15;
+    /* Scanlines */
+    .scanlines{
+      position: fixed; inset: 0;
+      z-index: 60;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0) 0px,
+        rgba(0,0,0,0) 2px,
+        rgba(0,0,0,.18) 3px,
+        rgba(0,0,0,0) 4px
+      );
+      mix-blend-mode: multiply;
+      opacity: .9;
     }
 
-    header{
-      max-width:1100px;
-      margin:0 auto;
-      padding:0;
-      text-align:center;
-      position:relative;
-      overflow:hidden;
-      /* No divider line under the banner */
-      border-bottom:none;
+    /* CRT vignette / bezel curve */
+    .crt-bezel{
+      position: fixed; inset: 0;
+      z-index: 55;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,.55) 100%),
+        radial-gradient(ellipse at center, transparent 88%, rgba(0,0,0,.85) 100%);
     }
 
-    .headerBanner{
-      width:100%;
-      /* Banner is already designed with its own vignette—avoid extra shading */
-      aspect-ratio: 2032 / 528;
-      height: auto;
-      max-height: 280px;
-      min-height: 150px;
+    /* Very subtle flicker */
+    .crt-flicker{
+      position: fixed; inset: 0;
+      z-index: 56;
+      pointer-events: none;
+      background: rgba(255,255,255,.01);
+      animation: flicker 4s infinite steps(2);
+    }
+    @keyframes flicker{
+      0%,94%  { opacity: 0; }
+      95%,96% { opacity: 1; }
+      97%,100%{ opacity: 0; }
+    }
 
-      background-image: url("jg-banner.png");
-      /* Fill the header cleanly (no letterbox bars). */
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+    .shell{
+      position: relative;
+      z-index: 5;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 28px 80px;
+    }
 
+    /* ============== COIN STRIP ============== */
+    .coin-strip{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid var(--whisper);
+      font-family: var(--crt);
+      font-size: 18px;
+      color: var(--dim);
+      letter-spacing: .05em;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .coin-strip .blink{ color: var(--yellow); animation: blink 1.2s steps(2) infinite; text-shadow: var(--yellow-glow); }
+    .coin-strip .sep{ color: var(--whisper); margin: 0 6px; }
+    @keyframes blink{ 50%{ opacity: 0; } }
+    .coin-strip a{
+      color: var(--cyan);
+      text-decoration: none;
+      text-shadow: var(--cyan-glow);
+    }
+    .coin-strip a:hover{ color: var(--text); }
+
+    /* ============== MARQUEE HEADER ============== */
+    .marquee{
+      text-align: center;
+      padding: 36px 12px 24px;
       position: relative;
     }
 
-    /* Banner overlay: disabled (image already has a vignette) */
-    .headerOverlay{ display:none; }
-
-    .headerContent{
-      max-width:1100px;
-      margin:0 auto;
-      padding:14px 18px 8px;
-      text-align:center;
+    .marquee-sup{
+      font-family: var(--crt);
+      color: var(--cyan);
+      font-size: 22px;
+      letter-spacing: .4em;
+      text-shadow: var(--cyan-glow);
+      margin-bottom: 6px;
+      opacity: .9;
     }
 
-    .headerBar{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:wrap;
-      padding:10px 12px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 18px 60px rgba(0,0,0,.28);
+    .marquee-title{
+      font-family: var(--pixel);
+      font-size: clamp(28px, 6vw, 64px);
+      line-height: 1.05;
+      color: var(--text);
+      letter-spacing: .04em;
+      margin: 10px 0 14px;
+      /* chromatic aberration + neon bloom */
+      text-shadow:
+        -2px 0 0 var(--magenta),
+         2px 0 0 var(--cyan),
+         0 0 18px rgba(255,46,136,.45),
+         0 0 36px rgba(0,232,255,.28);
+      animation: marquee-in 1.4s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .marquee-title .apos{ color: var(--yellow); text-shadow: 0 0 12px rgba(255,217,61,.5); }
+    @keyframes marquee-in{
+      0%  { opacity: 0; transform: translateY(8px) scale(.98); filter: blur(6px); }
+      100%{ opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
 
-    header::after{
-      /* Remove extra haze over the banner to avoid a "shaded border" look */
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      opacity:0;
+    .marquee-sub{
+      font-family: var(--crt);
+      color: var(--dim);
+      font-size: 22px;
+      letter-spacing: .25em;
+      margin: 0 auto;
+      max-width: 40ch;
+    }
+    .marquee-sub .cursor{
+      display: inline-block;
+      width: .55ch;
+      margin-left: 4px;
+      background: var(--magenta);
+      animation: blink 1s steps(2) infinite;
+      vertical-align: -2px;
+      height: 1em;
     }
 
-    .logo{
-      width:520px; max-width:95vw; padding:28px 32px; margin:0 auto;
-      border-radius:40px; border:1px solid rgba(255,255,255,.28);
+    .marquee-rule{
+      display: flex; align-items: center; gap: 16px;
+      margin: 26px auto 0;
+      max-width: 760px;
+    }
+    .marquee-rule .rail{
+      flex: 1; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--magenta), transparent);
+      box-shadow: 0 0 8px rgba(255,46,136,.55);
+    }
+    .marquee-rule .rail.cyan{
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      box-shadow: 0 0 8px rgba(0,232,255,.5);
+    }
+    .marquee-rule .stars{
+      font-family: var(--crt);
+      font-size: 22px;
+      color: var(--yellow);
+      text-shadow: var(--yellow-glow);
+    }
+
+    /* ============== SCOREBOARD ============== */
+    .scoreboard{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin: 34px 0 28px;
+    }
+    .score{
+      border: 2px solid var(--whisper);
+      background: var(--panel);
+      padding: 16px 18px;
+      position: relative;
+      box-shadow: inset 0 0 30px rgba(255,46,136,.05);
+    }
+    .score::before{
+      content: "";
+      position: absolute; top: -1px; left: -1px; right: -1px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--magenta), var(--cyan));
+      opacity: .65;
+    }
+    .score-lbl{
+      font-family: var(--crt);
+      color: var(--dim);
+      font-size: 18px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+    .score-val{
+      font-family: var(--pixel);
+      font-size: 26px;
+      color: var(--yellow);
+      text-shadow: var(--yellow-glow);
+      margin-top: 10px;
+      letter-spacing: .04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .score-val .sub{
+      font-family: var(--crt);
+      font-size: 22px;
+      color: var(--ghost);
+      text-shadow: none;
+      margin-left: 6px;
+    }
+    .score.magenta .score-val{ color: var(--magenta); text-shadow: var(--magenta-glow); }
+    .score.cyan .score-val{ color: var(--cyan); text-shadow: var(--cyan-glow); }
+    .score.green .score-val{ color: var(--green); text-shadow: var(--green-glow); }
+
+    /* ============== SECTION LABEL ============== */
+    .sectlbl{
+      display: flex; align-items: center; gap: 14px;
+      margin: 34px 0 16px;
+      font-family: var(--pixel);
+      color: var(--cyan);
+      font-size: 13px;
+      letter-spacing: .18em;
+      text-shadow: var(--cyan-glow);
+    }
+    .sectlbl .tag{ color: var(--magenta); text-shadow: var(--magenta-glow); }
+    .sectlbl .rule{
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border-br), transparent);
+    }
+
+    /* ============== CABINET GRID ============== */
+    .cabinets{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+
+    .cab{
+      --accent: var(--magenta);
+      --accent-glow: var(--magenta-glow);
+      position: relative;
       background:
-        radial-gradient(circle at 20% 30%, rgba(0,229,255,.65), transparent 55%),
-        radial-gradient(circle at 80% 70%, rgba(124,92,255,.85), transparent 55%),
-        linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02));
-      box-shadow: 0 40px 140px rgba(0,0,0,.65);
-      cursor:pointer; animation: pulse 4.5s ease-in-out infinite;
+        radial-gradient(500px 260px at 0% 0%, rgba(255,46,136,.06), transparent 60%),
+        radial-gradient(500px 260px at 100% 100%, rgba(0,232,255,.05), transparent 60%),
+        var(--panel);
+      border: 2px solid var(--whisper);
+      padding: 22px 22px 20px;
+      box-shadow:
+        inset 0 0 40px rgba(255,46,136,.06),
+        0 12px 36px rgba(0,0,0,.5);
+      animation: cab-in .6s cubic-bezier(.2,.7,.2,1) both;
+      animation-delay: calc(var(--stagger,0) * 110ms + 200ms);
+    }
+    @keyframes cab-in{
+      0%  { opacity: 0; transform: translateY(10px); filter: blur(3px); }
+      100%{ opacity: 1; transform: translateY(0); filter: blur(0); }
     }
 
-    .wordmark{
-      font-family: "Orbitron", "Audiowide", "Oxanium", system-ui, sans-serif;
-      font-size:64px; font-weight:900; letter-spacing:7px; text-transform:uppercase;
-      transform: skewX(-10deg);
-      background: linear-gradient(180deg, #ffffff 0%, #9a7dff 45%, #00e5ff 100%);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      -webkit-text-stroke: 1px rgba(0,229,255,.45);
-      text-shadow: 0 0 18px rgba(0,229,255,.85), 0 0 48px rgba(124,92,255,.75), 0 18px 60px rgba(0,0,0,.75);
+    /* Corner brackets */
+    .cab::before, .cab::after{
+      content: "";
+      position: absolute;
+      width: 16px; height: 16px;
+      border: 2px solid var(--accent);
+      box-shadow: var(--accent-glow);
+      pointer-events: none;
     }
+    .cab::before{ top: -2px; left: -2px; border-right: none; border-bottom: none; }
+    .cab::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
 
-    .subtitle{ margin:22px auto 0; color:var(--muted); font-size:15px; max-width:78ch; }
-    .help{ margin-left:10px; border:1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.05); color:var(--text); padding:6px 10px; border-radius:999px; cursor:pointer; font-weight:800; font-size:12px; }
-    .help:hover{ box-shadow:0 0 0 4px var(--ring); }
+    .cab.ready { --accent: var(--green); --accent-glow: var(--green-glow); }
+    .cab.ready { border-color: color-mix(in srgb, var(--green) 40%, var(--whisper)); }
 
-    /* Modal */
-    .modalBackdrop{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(6px);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:50;
+    .cab.standby{ --accent: var(--ghost); --accent-glow: none; }
+    .cab.standby{ opacity: .7; filter: grayscale(.2); }
+
+    .cab.fault  { --accent: var(--red); --accent-glow: var(--red-glow); }
+    .cab.warn   { --accent: var(--yellow); --accent-glow: var(--yellow-glow); }
+
+    .cab-head{
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--whisper);
+      margin-bottom: 16px;
+      gap: 12px;
     }
-    .modalBackdrop.show{ display:flex; }
-
-    .modal{
-      width:min(720px, 100%);
-      border-radius:22px;
-      border:1px solid rgba(255,255,255,.16);
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      box-shadow: 0 30px 120px rgba(0,0,0,.65);
-      padding:16px;
+    .cab-id{
+      font-family: var(--crt);
+      font-size: 20px;
+      color: var(--cyan);
+      letter-spacing: .18em;
+      text-shadow: var(--cyan-glow);
     }
-    .modalHeader{ display:flex; justify-content:space-between; gap:12px; align-items:center; }
-    .modalBody{ color: var(--muted); font-size:13px; line-height:1.55; margin-top:10px; }
-    .modalBody ol{ margin:10px 0 0 18px; }
-    .modalBody li{ margin:6px 0; }
-    .modalClose{
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.06);
+    .cab-id .slash{ color: var(--ghost); text-shadow: none; }
+    .cab-status{
+      font-family: var(--pixel);
+      font-size: 11px;
+      letter-spacing: .14em;
+      color: var(--accent);
+      text-shadow: var(--accent-glow);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cab.ready .cab-status{ animation: blink 1.4s steps(2) infinite; }
+
+    .cab-title{
+      font-family: var(--pixel);
+      font-size: clamp(18px, 2.4vw, 24px);
       color: var(--text);
-      border-radius:14px;
-      padding:8px 10px;
-      cursor:pointer;
-      font-weight:900;
+      letter-spacing: .04em;
+      margin: 4px 0 4px;
+      text-shadow: 0 0 14px rgba(244,236,255,.25);
+      line-height: 1.2;
     }
-    .k{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; color: var(--text); }
-    .note{ margin-top:10px; padding:10px 12px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.20); }
-
-    .chipRow{ display:flex; justify-content:center; gap:8px; margin-top:14px; flex-wrap:wrap; }
-    .chip{ font-size:12px; padding:6px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color:var(--muted); }
-
-    .chip.discord{
-      color: #eaf2ff;
-      border-color: rgba(88,101,242,.45);
-      background: linear-gradient(135deg, rgba(88,101,242,.25), rgba(124,92,255,.20));
-      font-weight:900;
-    }
-    .chip.discord:hover{ box-shadow:0 0 0 4px rgba(88,101,242,.35); }
-
-    main{ max-width:1200px; margin:0 auto; padding:0 18px 40px; }
-
-    /* --- Dashboard (matches your reference layout) --- */
-    .statsRow{
-      display:flex;
-      gap:12px;
-      justify-content:center;
-      flex-wrap:wrap;
-      margin: 18px 0 22px;
-    }
-    .stat{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 14px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      box-shadow: 0 18px 60px rgba(0,0,0,.30);
-      backdrop-filter: blur(10px);
-      min-width: 170px;
-    }
-    .statIcon{
-      width:34px; height:34px;
-      border-radius:12px;
-      display:grid; place-items:center;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .statNum{ font-weight:950; font-size:18px; line-height:1; }
-    .statLbl{ color:var(--muted); font-size:12px; margin-top:2px; }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap:18px;
-      margin-top: 0;
+    .cab-tag{
+      font-family: var(--crt);
+      color: var(--dim);
+      font-size: 20px;
+      letter-spacing: .12em;
+      margin-bottom: 16px;
     }
 
-    .card{
-      --gameAccent: var(--accent);
-      border-radius:26px;
-      padding:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(900px 420px at 10% 0%, rgba(124,92,255,.12), transparent 55%),
-        radial-gradient(900px 420px at 90% 10%, rgba(0,229,255,.08), transparent 55%),
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      box-shadow: 0 22px 70px rgba(0,0,0,.42);
-      backdrop-filter: blur(12px);
-      position:relative;
-      overflow:hidden;
-    }
-
-    .card::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      border-radius:28px;
-      pointer-events:none;
-      border:1px solid rgba(255,255,255,.06);
-    }
-
-    .cardHeader{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
-    .cardTitleRow{ display:flex; gap:12px; align-items:center; }
-
-    .gameIcon{
-      width:46px; height:46px;
-      border-radius:16px;
-      display:grid; place-items:center;
-      background: color-mix(in srgb, var(--gameAccent) 20%, rgba(255,255,255,.06));
-      border:1px solid color-mix(in srgb, var(--gameAccent) 45%, rgba(255,255,255,.14));
-      font-size:22px;
-    }
-
-    .titleWrap{ display:flex; flex-direction:column; gap:2px; }
-    .gameName{ font-size:18px; font-weight:950; letter-spacing:.2px; }
-    .gameType{ color:var(--muted); font-size:12px; }
-
-    .statusPill{
-      font-size:12px;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      display:flex;
-      align-items:center;
-      gap:8px;
-      white-space:nowrap;
-    }
-    .dot{ width:8px; height:8px; border-radius:999px; background: rgba(255,255,255,.35); }
-
-    .status-online{ border-color: rgba(45,255,179,.30); color:#caffee; }
-    .status-online .dot{ background: rgba(45,255,179,.90); }
-
-    .status-coming{ border-color: rgba(0,229,255,.25); color:#c9faff; }
-    .status-coming .dot{ background: rgba(0,229,255,.85); }
-
-    .status-maintenance{ border-color: rgba(255,209,102,.28); color:#ffe9b2; }
-    .status-maintenance .dot{ background: rgba(255,209,102,.9); }
-
-    .status-offline{ border-color: rgba(255,77,109,.30); color:#ffd1da; }
-    .status-offline .dot{ background: rgba(255,77,109,.9); }
-
-    .metrics{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      margin-top:14px;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .m{ display:flex; gap:8px; align-items:center; }
-    .mI{ opacity:.9; }
-
-    .addrBox{
-      margin-top:14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:12px 12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-    }
-    .addrLeft{ display:flex; gap:10px; align-items:center; min-width:0; }
-    .addrTxt{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    /* Stat block (arcade HUD) */
+    .cab-hud{
+      background: rgba(5,1,18,.55);
+      border: 1px dashed var(--whisper);
+      padding: 10px 14px;
+      font-family: var(--crt);
+      font-size: 20px;
       color: var(--text);
-      font-size:13px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-bottom: 18px;
     }
-    .iconBtn{
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
+    .cab-hud .row{
+      display: flex; justify-content: space-between; gap: 20px;
+    }
+    .cab-hud .k{
+      color: var(--dim);
+      letter-spacing: .14em;
+    }
+    .cab-hud .v{
       color: var(--text);
-      width:36px;
-      height:36px;
-      border-radius:12px;
-      cursor:pointer;
-      display:grid;
-      place-items:center;
+      font-family: var(--mono);
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
+    }
+    .cab-hud .v.hi { color: var(--green);   text-shadow: var(--green-glow); }
+    .cab-hud .v.dim{ color: var(--ghost); }
+
+    /* Endpoint */
+    .endpoint{
+      margin-bottom: 18px;
+    }
+    .endpoint-lbl{
+      font-family: var(--pixel);
+      font-size: 10px;
+      letter-spacing: .2em;
+      color: var(--cyan);
+      text-shadow: var(--cyan-glow);
+      margin-bottom: 8px;
+    }
+    .endpoint-row{
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      min-width: 0;
+    }
+    .endpoint-row .caret{
+      color: var(--magenta);
+      font-family: var(--crt);
+      font-size: 20px;
+      text-shadow: var(--magenta-glow);
+    }
+    .endpoint-row code{
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: .02em;
+    }
+    .endpoint-row code.dim{ color: var(--ghost); font-style: italic; }
+    .copy-btn{
+      font-family: var(--pixel);
+      font-size: 9.5px;
+      letter-spacing: .18em;
+      color: var(--cyan);
+      background: transparent;
+      border: 2px solid color-mix(in srgb, var(--cyan) 35%, transparent);
+      padding: 8px 10px;
+      cursor: pointer;
       flex: 0 0 auto;
+      transition: color .2s, border-color .2s, background .2s, box-shadow .2s;
     }
-    .iconBtn:hover{ box-shadow:0 0 0 4px var(--ring); border-color: rgba(0,229,255,.30); }
-
-    .cta{
-      margin-top:14px;
-      width:100%;
-      border-radius:16px;
-      padding:12px 14px;
-      font-weight:950;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
+    .copy-btn:hover:not(:disabled){
       color: var(--text);
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
+      border-color: var(--cyan);
+      background: rgba(0,232,255,.1);
+      box-shadow: var(--cyan-glow);
     }
-    .cta:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
-
-    .ctaOnline{
-      background: linear-gradient(90deg, color-mix(in srgb, var(--gameAccent) 40%, transparent), rgba(124,92,255,.12));
-      border-color: color-mix(in srgb, var(--gameAccent) 55%, transparent);
-    }
-    .ctaComing{ background: rgba(255,255,255,.05); }
-
-    .rowActions{ margin-top:10px; display:flex; gap:10px; justify-content:center; }
-    a.smallLink{
-      color: var(--muted);
-      font-size:12px;
-      text-decoration:none;
-      border-bottom:1px dashed rgba(255,255,255,.18);
-    }
-    a.smallLink:hover{ color: var(--text); border-bottom-color: rgba(0,229,255,.35); }
-
-    @media (max-width:640px){
-      .grid{ grid-template-columns: 1fr; }
-      .stat{ min-width: 150px; }
+    .copy-btn:disabled{ opacity: .3; cursor: not-allowed; }
+    .copy-btn.got{
+      color: var(--green);
+      border-color: var(--green);
+      text-shadow: var(--green-glow);
+      box-shadow: var(--green-glow);
     }
 
-    footer{ max-width:1100px; margin:0 auto; padding:24px 18px 40px; color:var(--muted); border-top:1px solid rgba(255,255,255,.09); }
-
-    @keyframes pulse{ 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.015); } }
-
-    /* Online card glow */
-    @keyframes onlineGlow{
-      0%,100%{ box-shadow: 0 22px 70px rgba(0,0,0,.42); }
-      50%{ box-shadow: 0 22px 70px rgba(0,0,0,.42), 0 0 28px color-mix(in srgb, var(--gameAccent) 45%, transparent); }
+    /* Big PRESS START button */
+    .start-btn{
+      width: 100%;
+      font-family: var(--pixel);
+      font-size: 13px;
+      letter-spacing: .2em;
+      color: var(--text);
+      background: linear-gradient(180deg,
+        color-mix(in srgb, var(--accent) 28%, transparent),
+        color-mix(in srgb, var(--accent) 12%, transparent));
+      border: 2px solid var(--accent);
+      padding: 16px 16px;
+      cursor: pointer;
+      text-shadow: var(--accent-glow);
+      box-shadow: var(--accent-glow), inset 0 0 20px rgba(255,255,255,.05);
+      transition: transform .1s, background .2s, box-shadow .2s;
+      position: relative;
     }
-    .card.online{ animation: onlineGlow 3.5s ease-in-out infinite; }
+    .start-btn::before{ content: "▶ "; color: var(--accent); }
+    .start-btn:hover:not(:disabled){
+      background: linear-gradient(180deg,
+        color-mix(in srgb, var(--accent) 45%, transparent),
+        color-mix(in srgb, var(--accent) 20%, transparent));
+    }
+    .start-btn:active:not(:disabled){ transform: translateY(1px); }
+    .start-btn:disabled{
+      opacity: .5;
+      cursor: not-allowed;
+      border-color: var(--whisper);
+      color: var(--ghost);
+      text-shadow: none;
+      box-shadow: none;
+      background: transparent;
+    }
+    .cab.ready .start-btn{ animation: start-pulse 2.4s ease-in-out infinite; }
+    @keyframes start-pulse{
+      0%,100%{ box-shadow: var(--accent-glow), inset 0 0 20px rgba(255,255,255,.05); }
+      50%   { box-shadow: 0 0 8px var(--accent), 0 0 28px var(--accent), 0 0 48px var(--accent), inset 0 0 24px rgba(255,255,255,.08); }
+    }
 
-    @media (max-width:640px){ .wordmark{ font-size:42px; letter-spacing:4px; } }
+    /* Sub-actions */
+    .sub-actions{
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .sub-btn{
+      font-family: var(--crt);
+      font-size: 18px;
+      letter-spacing: .1em;
+      background: transparent;
+      border: none;
+      color: var(--dim);
+      cursor: pointer;
+      padding: 4px 8px;
+      text-decoration: none;
+      transition: color .2s, text-shadow .2s;
+    }
+    .sub-btn::before{ content: "→ "; color: var(--magenta); }
+    .sub-btn:hover{ color: var(--text); text-shadow: 0 0 8px rgba(255,255,255,.3); }
+
+    /* ============== HOW TO PLAY CARD ============== */
+    .howto{
+      margin-top: 40px;
+      padding: 22px 24px;
+      border: 2px solid var(--whisper);
+      background:
+        linear-gradient(90deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 40%),
+        var(--panel);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; flex-wrap: wrap;
+      position: relative;
+    }
+    .howto::before{
+      content: "";
+      position: absolute; top: -2px; left: -2px; right: -2px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--yellow));
+      opacity: .7;
+    }
+    .howto-text{
+      font-family: var(--crt);
+      color: var(--dim);
+      font-size: 20px;
+      line-height: 1.35;
+      max-width: 60ch;
+    }
+    .howto-text strong{ color: var(--yellow); text-shadow: var(--yellow-glow); }
+    .howto-btn{
+      font-family: var(--pixel);
+      font-size: 11px;
+      letter-spacing: .18em;
+      color: var(--cyan);
+      background: transparent;
+      border: 2px solid var(--cyan);
+      padding: 12px 18px;
+      cursor: pointer;
+      text-shadow: var(--cyan-glow);
+      box-shadow: var(--cyan-glow);
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .howto-btn:hover{ background: rgba(0,232,255,.12); }
+
+    /* ============== FOOTER ============== */
+    footer.arc-foot{
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px dashed var(--whisper);
+      font-family: var(--crt);
+      font-size: 18px;
+      color: var(--ghost);
+      text-align: center;
+    }
+    footer.arc-foot a{
+      color: var(--cyan); text-decoration: none; text-shadow: var(--cyan-glow);
+    }
+    footer.arc-foot a:hover{ color: var(--text); }
+
+    /* ============== MODAL ============== */
+    .modal-backdrop{
+      position: fixed; inset: 0;
+      background: rgba(5,1,18,.85);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 24px;
+      z-index: 90;
+    }
+    .modal-backdrop.show{ display: flex; }
+    .modal{
+      width: min(640px, 100%);
+      background:
+        radial-gradient(400px 200px at 0% 0%, rgba(0,232,255,.12), transparent 60%),
+        var(--panel-up);
+      border: 2px solid var(--cyan);
+      box-shadow: var(--cyan-glow);
+      padding: 0;
+      position: relative;
+    }
+    .modal::before, .modal::after{
+      content: "";
+      position: absolute;
+      width: 18px; height: 18px;
+      border: 2px solid var(--cyan);
+      box-shadow: var(--cyan-glow);
+    }
+    .modal::before{ top: -2px; left: -2px; border-right: none; border-bottom: none; }
+    .modal::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+    .modal-head{
+      padding: 16px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px dashed var(--whisper);
+      background: rgba(0,232,255,.04);
+    }
+    .modal-title{
+      font-family: var(--pixel);
+      font-size: 14px;
+      color: var(--cyan);
+      letter-spacing: .14em;
+      text-shadow: var(--cyan-glow);
+    }
+    .modal-close{
+      font-family: var(--pixel);
+      font-size: 10px;
+      letter-spacing: .2em;
+      color: var(--magenta);
+      background: transparent;
+      border: 2px solid var(--magenta);
+      padding: 6px 10px;
+      cursor: pointer;
+      text-shadow: var(--magenta-glow);
+      box-shadow: var(--magenta-glow);
+    }
+    .modal-close:hover{ background: rgba(255,46,136,.15); }
+
+    .modal-body{
+      padding: 22px 22px 24px;
+      font-family: var(--crt);
+      font-size: 21px;
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .modal-body ol{
+      padding-left: 28px;
+      margin: 10px 0 0;
+      counter-reset: step;
+      list-style: none;
+    }
+    .modal-body ol li{
+      position: relative;
+      margin: 8px 0;
+    }
+    .modal-body ol li::before{
+      counter-increment: step;
+      content: counter(step, decimal-leading-zero);
+      position: absolute;
+      left: -32px;
+      top: 2px;
+      font-family: var(--pixel);
+      font-size: 10px;
+      color: var(--magenta);
+      text-shadow: var(--magenta-glow);
+    }
+    .modal-body .k{
+      font-family: var(--mono);
+      color: var(--yellow);
+      background: rgba(255,217,61,.1);
+      padding: 0 6px;
+      font-size: 15px;
+      border: 1px solid color-mix(in srgb, var(--yellow) 25%, transparent);
+    }
+    .modal-body .note{
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-left: 3px solid var(--magenta);
+      background: rgba(255,46,136,.06);
+      color: var(--dim);
+      font-size: 19px;
+    }
+    .modal-body .note strong{ color: var(--text); }
+
+    @media (max-width: 640px){
+      body{ font-size: 18px; }
+      .shell{ padding: 20px 18px 60px; }
+      .marquee{ padding: 18px 8px 8px; }
+      .cab{ padding: 20px 18px 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="headerBanner">
-      <div class="headerOverlay" aria-hidden="true"></div>
-    </div>
-    <div class="headerContent">
-      <div class="headerBar">
-        <span class="subtitle" style="margin:0; max-width:none;">Servers, in one place. Copy the address to join (recommended), or open the game via Steam.</span>
-        <button class="help" id="helpBtn" type="button" aria-haspopup="dialog" aria-controls="helpModal">How to join?</button>
-        <a class="chip discord" id="discordBtn" href="https://discord.gg/JzhCXC2wGk" target="_blank" rel="noopener">💬 Join Discord</a>
-      </div>
-      <div class="chipRow" style="margin-top:10px;">
-        <span class="chip">Fast connect</span>
-        <span class="chip">Steam-friendly</span>
-        <span class="chip">More games coming</span>
-      </div>
-    </div>
-  </header>
+  <div class="crt-bg" aria-hidden="true"></div>
+  <div class="crt-bezel" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="crt-flicker" aria-hidden="true"></div>
 
-  <main>
-    <div class="statsRow" id="statsRow">
-      <div class="stat"><div class="statIcon">🗄️</div><div><div class="statNum" id="stOnline">—</div><div class="statLbl">Servers Online</div></div></div>
-      <div class="stat"><div class="statIcon">👥</div><div><div class="statNum" id="stPlayers">—</div><div class="statLbl">Active Players</div></div></div>
-      <div class="stat"><div class="statIcon">🌐</div><div><div class="statNum" id="stPing">—</div><div class="statLbl">Avg. Ping</div></div></div>
-    </div>
-    <div class="grid" id="grid"></div>
-  </main>
+  <div class="shell">
 
-  <div class="modalBackdrop" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="coin-strip">
+      <span><span class="blink">● INSERT COIN</span><span class="sep">│</span>CREDITS: <span style="color:var(--yellow)">∞</span></span>
+      <span><a href="https://discord.gg/JzhCXC2wGk" target="_blank" rel="noopener">[ DISCORD HOTLINE ]</a></span>
+    </div>
+
+    <header class="marquee">
+      <div class="marquee-sup">— SELECT YOUR GAME —</div>
+      <h1 class="marquee-title">JAMES<span class="apos">'</span> GAMES</h1>
+      <div class="marquee-sub">pick a cabinet · copy the address · press start<span class="cursor"></span></div>
+      <div class="marquee-rule">
+        <div class="rail"></div>
+        <div class="stars">★ ★ ★</div>
+        <div class="rail cyan"></div>
+      </div>
+    </header>
+
+    <section class="scoreboard" aria-label="scoreboard">
+      <div class="score green">
+        <div class="score-lbl">STAGES ONLINE</div>
+        <div class="score-val"><span id="stOnline">--</span><span class="sub">/ <span id="stTotal">--</span></span></div>
+      </div>
+      <div class="score magenta">
+        <div class="score-lbl">PLAYERS</div>
+        <div class="score-val" id="stPlayers">--</div>
+      </div>
+      <div class="score cyan">
+        <div class="score-lbl">HI-SCORE</div>
+        <div class="score-val" id="stHiScore">00000</div>
+      </div>
+      <div class="score">
+        <div class="score-lbl">LAST PING</div>
+        <div class="score-val" id="stLast" style="font-size:18px">--</div>
+      </div>
+    </section>
+
+    <div class="sectlbl">
+      <span class="tag">&gt;</span>SELECT CABINET<span class="rule"></span>
+    </div>
+
+    <section class="cabinets" id="grid"></section>
+
+    <div class="sectlbl" style="margin-top:44px">
+      <span class="tag">&gt;</span>HOW TO PLAY<span class="rule"></span>
+    </div>
+
+    <div class="howto">
+      <div class="howto-text">
+        <strong>The rules are simple.</strong> Pick a cabinet that says READY. Copy its endpoint
+        (or join code for Windrose). Launch the game, paste, connect.
+        Standby cabinets aren't plugged in yet — but they will be.
+      </div>
+      <button class="howto-btn" id="helpBtn" type="button" aria-haspopup="dialog" aria-controls="helpModal">Open Manual</button>
+    </div>
+
+    <footer class="arc-foot">
+      <div>JAMES' GAMES ARCADE // EST. 2025 // <a href="https://github.com/dontcallmejames/james-games" target="_blank" rel="noopener">SOURCE</a></div>
+      <div style="margin-top:6px;font-size:15px;color:var(--ghost)">TELEMETRY <span id="lastObserved">AWAITING...</span></div>
+    </footer>
+  </div>
+
+  <div class="modal-backdrop" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="modal">
-      <div class="modalHeader">
-        <strong id="helpTitle">How to join</strong>
-        <button class="modalClose" id="helpClose" type="button" aria-label="Close">✕</button>
+      <div class="modal-head">
+        <div class="modal-title" id="helpTitle">MANUAL // INSERT COIN</div>
+        <button class="modal-close" id="helpClose" type="button" aria-label="Close">ESC</button>
       </div>
-      <div class="modalBody" id="helpBody">
+      <div class="modal-body" id="helpBody">
         <ol>
-          <li>Pick a game card.</li>
-          <li>Click <span class="k">Copy IP</span>.</li>
-          <li>Open the game and paste the address in its Join/Multiplayer screen.</li>
-          <li>Enter the server password when prompted.</li>
+          <li>Find a cabinet marked <span class="k">READY</span>.</li>
+          <li>Hit <span class="k">COPY</span> on the endpoint.</li>
+          <li>Launch the game. Paste into its multiplayer / join-by-IP dialog.</li>
+          <li>Type the passphrase if it asks.</li>
         </ol>
-        <div class="note"><strong>Steam links:</strong> They open the correct game, but auto-connect may not work on all systems.</div>
+        <div class="note"><strong>Steam shortcut</strong> opens the game but doesn't always auto-connect. Copying the endpoint is the reliable play.</div>
       </div>
     </div>
   </div>
 
-  <footer><div><strong>Admin note:</strong> Update servers by editing the <code>SERVERS</code> list in this file.</div></footer>
-
   <script>
-    const ICONS = {
-      Necesse: "🏰",
-      Enshrouded: "🔥",
-      Hytale: "💎",
-      Windrose: "🏴‍☠️"
+    const TAGS = {
+      Necesse:    "NEC-01",
+      Windrose:   "WND-01",
+      Enshrouded: "ENS-01",
+      Hytale:     "HYT-01"
     };
-
-    const ACCENTS = {
-      Necesse: "--nec",
-      Enshrouded: "--ens",
-      Hytale: "--hyt",
-      Windrose: "--wnd"
-    };
-
-    const CTA_TEXT = {
-      Necesse: "Enter World",
-      Enshrouded: "Enter Realm",
-      Hytale: "Begin Adventure",
-      Windrose: "Set Sail"
+    const TAGLINES = {
+      Necesse:    "pixel survival sandbox",
+      Windrose:   "pirates · pvp · open sea",
+      Enshrouded: "dark fantasy survival",
+      Hytale:     "block-fantasy sandbox"
     };
 
     const SERVERS = [
       {
         game: "Necesse",
-        type: "Necesse",
-        emoji: "🧰",
         host: "necesse.dontcallmejames.com",
         port: 14159,
         status: "online",
-        // Optional: fill these in later for the full dashboard look
         playersCurrent: null,
         playersMax: null,
         pingMs: null,
-        notes: "Join: Multiplayer → Join by IP (paste address). Password prompt will appear if needed.",
+        startedAt: null,
         connectUrl: "steam://run/1169040//-connect%20necesse.dontcallmejames.com%3A14159"
       },
       {
         game: "Windrose",
-        type: "Windrose",
-        emoji: "🏴‍☠️",
         status: "online",
         joinCode: "9b202b29",
-        notes: "Join via server code in Windrose's multiplayer menu."
+        connectUrl: "steam://run/3041230"
       },
-      { game: "Enshrouded", type: "Enshrouded", emoji: "🔥", status: "coming", notes: "Coming soon." },
-      { game: "Hytale", type: "Hytale", emoji: "🧊", status: "coming", notes: "Coming soon." }
+      { game: "Enshrouded", status: "coming" },
+      { game: "Hytale",     status: "coming" }
     ];
 
-    const grid = document.getElementById("grid");
-    const helpBtnGlobal = document.getElementById("helpBtn");
-    const headerBanner = document.querySelector(".headerBanner");
-    const helpModal = document.getElementById("helpModal");
-    const helpClose = document.getElementById("helpClose");
+    const grid     = document.getElementById("grid");
+    const helpBtn  = document.getElementById("helpBtn");
+    const helpModal= document.getElementById("helpModal");
+    const helpClose= document.getElementById("helpClose");
+    const helpTitle= document.getElementById("helpTitle");
+    const helpBody = document.getElementById("helpBody");
 
     function escapeHtml(str){
       return String(str).replace(/[&<>"']/g, (m) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        "\"": "&quot;",
-        "'": "&#039;"
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
       }[m]));
     }
 
-    function statusText(status){
-      if (status === "online") return "Online";
-      if (status === "maintenance") return "Maintenance";
-      if (status === "offline") return "Offline";
-      return "Coming soon";
+    function statusMeta(s){
+      if (s === "online")      return { label: "READY",       cls: "ready" };
+      if (s === "maintenance") return { label: "MAINTENANCE", cls: "warn"  };
+      if (s === "offline")     return { label: "OFFLINE",     cls: "fault" };
+      return                         { label: "STANDBY",     cls: "standby" };
     }
 
-    function statusClass(status){
-      if (status === "online") return "status-online";
-      if (status === "maintenance") return "status-maintenance";
-      if (status === "offline") return "status-offline";
-      return "status-coming";
-    }
-
-    function addressOf(s){
-      if (s.status !== "online") return "Coming soon";
+    function endpointOf(s){
+      if (s.status !== "online") return null;
       if (s.joinCode) return s.joinCode;
-      if (!s.host) return "Coming soon";
-      return s.port ? `${s.host}:${s.port}` : `${s.host}`;
+      if (!s.host) return null;
+      return s.port ? `${s.host}:${s.port}` : s.host;
     }
-
-    function addressLabel(s){
-      return s.joinCode ? "Server Code" : "Address";
-    }
+    function endpointLabel(s){ return s.joinCode ? "JOIN CODE" : "ENDPOINT"; }
 
     async function copyToClipboard(text){
-      try{
-        await navigator.clipboard.writeText(text);
-      } catch {
+      try { await navigator.clipboard.writeText(text); }
+      catch {
         const ta = document.createElement("textarea");
         ta.value = text;
         document.body.appendChild(ta);
@@ -540,172 +878,206 @@
       }
     }
 
+    function fmtDuration(ms){
+      if (ms == null || !Number.isFinite(ms) || ms < 0) return "--";
+      const s = Math.floor(ms/1000);
+      const d = Math.floor(s/86400);
+      const h = Math.floor((s%86400)/3600);
+      const m = Math.floor((s%3600)/60);
+      if (d >= 1) return `${d}d ${String(h).padStart(2,"0")}h`;
+      if (h >= 1) return `${h}h ${String(m).padStart(2,"0")}m`;
+      return `${m}m`;
+    }
+
+    function parseSystemdTs(str){
+      if (!str) return null;
+      const m = str.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\s+([A-Z]{2,5})?/);
+      if (!m) return null;
+      const [_, Y, Mo, D, h, mi, se, tz] = m;
+      const tzMap = { UTC: 0, EST: -5, EDT: -4, CST: -6, CDT: -5, MST: -7, MDT: -6, PST: -8, PDT: -7 };
+      const offH = tz && tzMap[tz] != null ? tzMap[tz] : null;
+      if (offH == null){
+        return new Date(`${Y}-${Mo}-${D}T${h}:${mi}:${se}`).getTime();
+      }
+      const sign = offH >= 0 ? "+" : "-";
+      const abs = String(Math.abs(offH)).padStart(2,"0");
+      return new Date(`${Y}-${Mo}-${D}T${h}:${mi}:${se}${sign}${abs}:00`).getTime();
+    }
+
+    function padScore(n, width=5){
+      return String(Math.max(0, Math.floor(n))).padStart(width, "0");
+    }
+
     function render(){
       grid.innerHTML = "";
 
-      // Stats (best-effort; uses optional fields)
+      const total  = SERVERS.length;
       const online = SERVERS.filter(s => s.status === "online").length;
-      const total = SERVERS.length;
-
       const playerNums = SERVERS
         .filter(s => s.status === "online" && typeof s.playersCurrent === "number")
         .map(s => s.playersCurrent);
       const playersSum = playerNums.length ? playerNums.reduce((a,b)=>a+b,0) : null;
 
-      const pings = SERVERS
-        .filter(s => s.status === "online" && typeof s.pingMs === "number")
-        .map(s => s.pingMs);
-      const pingAvg = pings.length ? Math.round(pings.reduce((a,b)=>a+b,0) / pings.length) : null;
+      document.getElementById("stOnline").textContent  = padScore(online, 2);
+      document.getElementById("stTotal").textContent   = padScore(total, 2);
+      document.getElementById("stPlayers").textContent = playersSum === null ? "--" : padScore(playersSum, 3);
 
-      document.getElementById("stOnline").textContent = `${online}/${total}`;
-      document.getElementById("stPlayers").textContent = playersSum !== null ? String(playersSum) : "—";
-      document.getElementById("stPing").textContent = pingAvg !== null ? `${pingAvg}ms` : "—";
+      // HI-SCORE as a faux arcade scoreboard: online * 10k + players * 100 + uptime_minutes
+      const starts = SERVERS
+        .filter(s => s.status === "online" && s.startedAt)
+        .map(s => parseSystemdTs(s.startedAt))
+        .filter(Boolean);
+      const earliest = starts.length ? Math.min(...starts) : null;
+      const uptimeMin = earliest ? Math.floor((Date.now() - earliest) / 60000) : 0;
+      const hi = online * 10000 + (playersSum || 0) * 100 + uptimeMin;
+      document.getElementById("stHiScore").textContent = padScore(hi, 5);
 
-      for (const s of SERVERS){
-        const addr = addressOf(s);
-        const hasAddr = s.status === "online";
+      SERVERS.forEach((s, idx) => {
+        const meta = statusMeta(s.status);
+        const endpoint = endpointOf(s);
+        const isReady = s.status === "online";
+
+        const card = document.createElement("article");
+        card.className = `cab ${meta.cls}`;
+        card.style.setProperty("--stagger", String(idx));
 
         const playersText = (typeof s.playersCurrent === "number" && typeof s.playersMax === "number")
-          ? `${s.playersCurrent}/${s.playersMax} Players`
-          : "— Players";
-
-        const pingText = (typeof s.pingMs === "number") ? `${s.pingMs}ms` : "—";
-
-        const card = document.createElement("div");
-        card.className = "card";
-        if (s.status === "online") card.classList.add("online");
-        if (ACCENTS[s.game]){
-          card.style.setProperty("--gameAccent", `var(${ACCENTS[s.game]})`);
-        }
-
-        const ctaLabel = s.status === "online"
-          ? (CTA_TEXT[s.game] || "Connect Now")
-          : (s.status === "maintenance" ? "Under Maintenance" : (s.status === "offline" ? "Server Offline" : "Coming Soon"));
+          ? `${String(s.playersCurrent).padStart(2,"0")} / ${String(s.playersMax).padStart(2,"0")}`
+          : (typeof s.playersMax === "number"
+              ? `-- / ${String(s.playersMax).padStart(2,"0")}`
+              : `--`);
+        const pingText = (typeof s.pingMs === "number") ? `${s.pingMs}ms` : `--`;
+        const startedMs = parseSystemdTs(s.startedAt);
+        const uptimeText = startedMs ? fmtDuration(Date.now() - startedMs) : "--";
 
         card.innerHTML = `
-          <div class="cardHeader">
-            <div class="cardTitleRow">
-              <div class="gameIcon" aria-hidden="true">${escapeHtml(ICONS[s.game] || "🎮")}</div>
-              <div class="titleWrap">
-                <div class="gameName">${escapeHtml(s.game)}</div>
-                <div class="gameType">${escapeHtml(s.type || "")}</div>
-              </div>
+          <div class="cab-head">
+            <div class="cab-id">${escapeHtml(TAGS[s.game] || "---")} <span class="slash">//</span> ${escapeHtml(s.game.toUpperCase())}</div>
+            <div class="cab-status">● ${escapeHtml(meta.label)}</div>
+          </div>
+
+          <h2 class="cab-title">${escapeHtml(s.game.toUpperCase())}</h2>
+          <div class="cab-tag">${escapeHtml(TAGLINES[s.game] || "")}</div>
+
+          <div class="cab-hud" aria-label="stats">
+            <div class="row"><span class="k">PLAYERS</span>  <span class="v ${isReady ? 'hi' : 'dim'}">${playersText}</span></div>
+            <div class="row"><span class="k">LATENCY</span>  <span class="v ${typeof s.pingMs === 'number' ? '' : 'dim'}">${pingText}</span></div>
+            <div class="row"><span class="k">UPTIME</span>   <span class="v ${startedMs ? '' : 'dim'}">${uptimeText}</span></div>
+          </div>
+
+          <div class="endpoint">
+            <div class="endpoint-lbl">&gt; ${escapeHtml(endpointLabel(s))}</div>
+            <div class="endpoint-row">
+              <span class="caret">&gt;</span>
+              <code class="${endpoint ? '' : 'dim'}" title="${escapeHtml(endpoint || 'not yet plugged in')}">${escapeHtml(endpoint || 'not plugged in')}</code>
+              <button class="copy-btn" ${endpoint ? `data-copy="${escapeHtml(endpoint)}"` : 'disabled'}>COPY</button>
             </div>
-            <div class="statusPill ${statusClass(s.status)}"><span class="dot"></span>${escapeHtml(statusText(s.status))}</div>
           </div>
 
-          <div class="metrics">
-            <div class="m"><span class="mI">👥</span><span>${escapeHtml(playersText)}</span></div>
-            <div class="m"><span class="mI">📶</span><span>${escapeHtml(pingText)}</span></div>
-          </div>
-
-          <div class="addrBox">
-            <div class="addrLeft">
-              <span class="mI">🧾</span>
-              <div class="addrTxt" title="${escapeHtml(hasAddr ? `${addressLabel(s)}: ${addr}` : "Coming soon")}">${escapeHtml(hasAddr ? addr : "Coming soon")}</div>
-            </div>
-            <button class="iconBtn" ${hasAddr ? `data-copy="${escapeHtml(addr)}"` : "disabled"} title="Copy ${escapeHtml(addressLabel(s).toLowerCase())}">⧉</button>
-          </div>
-
-          <button class="cta ${s.status === "online" ? "ctaOnline" : "ctaComing"}" ${s.status === "online" ? `data-connect="${escapeHtml(addr)}"` : "disabled"}>
-            ⚡ ${escapeHtml(ctaLabel)}
+          <button class="start-btn" ${endpoint ? `data-connect="${escapeHtml(endpoint)}"` : 'disabled'}>
+            ${isReady ? 'PRESS START' : meta.label}
           </button>
 
-          <div class="rowActions">
-            ${s.connectUrl ? `<button class="smallLink" type="button" data-steam="${escapeHtml(s.connectUrl)}">Open in Steam</button>` : ``}
-            <a class="smallLink" href="#" data-help="${escapeHtml(s.game)}">How to join</a>
+          <div class="sub-actions">
+            <button class="sub-btn" type="button" data-help="${escapeHtml(s.game)}">HOW TO PLAY</button>
+            ${s.connectUrl ? `<button class="sub-btn" type="button" data-steam="${escapeHtml(s.connectUrl)}">OPEN IN STEAM</button>` : ``}
           </div>
         `;
 
-        const copyBtn = card.querySelector("button[data-copy]");
+        const copyBtn = card.querySelector(".copy-btn[data-copy]");
         if (copyBtn){
           copyBtn.addEventListener("click", async () => {
             await copyToClipboard(copyBtn.getAttribute("data-copy"));
-            copyBtn.textContent = "✓";
-            setTimeout(() => (copyBtn.textContent = "⧉"), 900);
+            const prev = copyBtn.textContent;
+            copyBtn.classList.add("got");
+            copyBtn.textContent = "GOT IT";
+            setTimeout(() => { copyBtn.classList.remove("got"); copyBtn.textContent = prev; }, 1200);
           });
         }
-
-        const connectBtn = card.querySelector("button[data-connect]");
-        if (connectBtn){
-          connectBtn.addEventListener("click", async () => {
-            await copyToClipboard(connectBtn.getAttribute("data-connect"));
-            const prev = connectBtn.textContent;
-            connectBtn.textContent = "✓ Copied — paste in-game";
-            setTimeout(() => (connectBtn.textContent = prev), 1100);
+        const startBtn = card.querySelector(".start-btn[data-connect]");
+        if (startBtn){
+          startBtn.addEventListener("click", async () => {
+            await copyToClipboard(startBtn.getAttribute("data-connect"));
+            const prev = startBtn.textContent.trim();
+            startBtn.textContent = "✓ COPIED — PASTE IN-GAME";
+            setTimeout(() => { startBtn.textContent = prev; }, 1400);
           });
         }
-
-        const steamBtn = card.querySelector("button[data-steam]");
+        const steamBtn = card.querySelector(".sub-btn[data-steam]");
         if (steamBtn){
           steamBtn.addEventListener("click", () => {
             window.location.href = steamBtn.getAttribute("data-steam");
           });
         }
-
-        const helpLink = card.querySelector("a[data-help]");
+        const helpLink = card.querySelector(".sub-btn[data-help]");
         if (helpLink){
-          helpLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            openHelpForGame(s.game);
-          });
+          helpLink.addEventListener("click", () => openHelp(s.game));
         }
 
         grid.appendChild(card);
-      }
+      });
     }
 
-    function scrollTopSmooth(){
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    // Clickable banner: scroll to top
-    if (headerBanner){
-      headerBanner.style.cursor = "pointer";
-      headerBanner.addEventListener("click", scrollTopSmooth);
-    }
-
-    function openHelp(){ helpModal.classList.add("show"); helpClose.focus(); }
-    function closeHelp(){ helpModal.classList.remove("show"); }
-
-    function openHelpForGame(game){
+    function openHelp(game){
       if (game === "Necesse"){
-        helpTitle.textContent = "How to join — Necesse";
+        helpTitle.textContent = "MANUAL // NECESSE";
         helpBody.innerHTML = `
           <ol>
-            <li>Click <span class="k">Copy IP</span> on the Necesse card.</li>
-            <li>Open Necesse.</li>
-            <li>Go to <span class="k">Multiplayer</span> → <span class="k">Join by IP</span>, paste the address, and join.</li>
-            <li>Enter the server password when prompted.</li>
+            <li>Hit <span class="k">COPY</span> on the Necesse cabinet.</li>
+            <li>Launch Necesse.</li>
+            <li>Go to <span class="k">Multiplayer</span> → <span class="k">Join by IP</span>, paste, and join.</li>
+            <li>Type the server passphrase when prompted.</li>
           </ol>
-          <div class="note"><strong>Open in Steam:</strong> launches the game, but Steam may ignore auto-connect arguments. Copy IP is the reliable path.</div>
+          <div class="note"><strong>Open in Steam</strong> launches the game but Steam sometimes ignores auto-connect. Copy is the reliable play.</div>
         `;
       } else if (game === "Windrose"){
-        helpTitle.textContent = "How to join — Windrose";
+        helpTitle.textContent = "MANUAL // WINDROSE";
         helpBody.innerHTML = `
           <ol>
-            <li>Click <span class="k">Copy Server Code</span> on the Windrose card.</li>
-            <li>Open Windrose.</li>
-            <li>Go to <span class="k">Multiplayer</span>, paste the server code, and join.</li>
+            <li>Hit <span class="k">COPY</span> on the Windrose cabinet.</li>
+            <li>Launch Windrose.</li>
+            <li>Open multiplayer, paste the code, set sail.</li>
           </ol>
-          <div class="note">Windrose uses a join code rather than an IP address — no port forwarding needed on your end.</div>
+          <div class="note">Windrose uses a join-code matchmaker rather than a direct IP — no port forwarding on your end.</div>
         `;
       } else {
-        helpTitle.textContent = `How to join — ${game}`;
+        helpTitle.textContent = "MANUAL // INSERT COIN";
         helpBody.innerHTML = `
-          <p>This server is marked <strong>Coming soon</strong>.</p>
-          <p>Once it’s live, this modal will show the exact in-game join steps here.</p>
+          <ol>
+            <li>Find a cabinet marked <span class="k">READY</span>.</li>
+            <li>Hit <span class="k">COPY</span> on its endpoint.</li>
+            <li>Launch the game; paste into its multiplayer dialog.</li>
+            <li>Enter the passphrase if prompted.</li>
+          </ol>
+          <div class="note"><strong>Standby cabinets</strong> aren't plugged in yet — they'll light up when they are.</div>
         `;
       }
-      openHelp();
+      helpModal.classList.add("show");
+      helpClose.focus();
     }
+    function closeHelp(){ helpModal.classList.remove("show"); }
 
-    helpBtnGlobal.addEventListener("click", openHelp);
+    helpBtn.addEventListener("click", () => openHelp());
     helpClose.addEventListener("click", closeHelp);
     helpModal.addEventListener("click", (e) => { if (e.target === helpModal) closeHelp(); });
-    window.addEventListener("keydown", (e) => { if (e.key === "Escape" && helpModal.classList.contains("show")) closeHelp(); });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && helpModal.classList.contains("show")) closeHelp();
+    });
 
+    // ============== LIVE STATUS (gist) ==============
     const STATUS_URL = "https://gist.githubusercontent.com/dontcallmejames/c9e5490e13425a40faecf953f838d579/raw/status.json";
+
+    function formatObservedShort(iso){
+      try{
+        const d = new Date(iso);
+        const now = new Date();
+        const diff = Math.max(0, (now - d) / 1000);
+        if (diff < 60) return `UPDATED ${Math.floor(diff)}s AGO`;
+        if (diff < 3600) return `UPDATED ${Math.floor(diff/60)}m AGO`;
+        if (diff < 86400) return `UPDATED ${Math.floor(diff/3600)}h AGO`;
+        return `UPDATED ${d.toISOString().slice(0,10)}`;
+      } catch { return "AWAITING..."; }
+    }
 
     async function pullLiveStatus(){
       try {
@@ -713,10 +1085,16 @@
         if (!r.ok) return;
         const s = await r.json();
         const nec = SERVERS.find(x => x.game === "Necesse");
-        if (!nec || !s.necesse) return;
-        if (s.necesse.status) nec.status = s.necesse.status;
-        if (typeof s.necesse.player_count === "number") nec.playersCurrent = s.necesse.player_count;
-        if (typeof s.necesse.max_players   === "number") nec.playersMax     = s.necesse.max_players;
+        if (nec && s.necesse){
+          if (s.necesse.status) nec.status = s.necesse.status;
+          if (typeof s.necesse.player_count === "number") nec.playersCurrent = s.necesse.player_count;
+          if (typeof s.necesse.max_players   === "number") nec.playersMax     = s.necesse.max_players;
+          if (s.necesse.started_at) nec.startedAt = s.necesse.started_at;
+        }
+        if (s.updated_at){
+          document.getElementById("lastObserved").textContent = formatObservedShort(s.updated_at);
+          document.getElementById("stLast").textContent = formatObservedShort(s.updated_at).replace("UPDATED ", "");
+        }
         render();
       } catch {}
     }
