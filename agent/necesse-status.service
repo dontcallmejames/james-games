@@ -1,0 +1,10 @@
+[Unit]
+Description=Necesse status agent (pushes status to GitHub Gist)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=dontcallmejames
+EnvironmentFile=/home/dontcallmejames/necesse-server/status-agent/.env
+ExecStart=/usr/bin/python3 /home/dontcallmejames/necesse-server/status-agent/agent.py

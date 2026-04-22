@@ -678,7 +678,25 @@
     helpModal.addEventListener("click", (e) => { if (e.target === helpModal) closeHelp(); });
     window.addEventListener("keydown", (e) => { if (e.key === "Escape" && helpModal.classList.contains("show")) closeHelp(); });
 
+    const STATUS_URL = "https://gist.githubusercontent.com/dontcallmejames/c9e5490e13425a40faecf953f838d579/raw/status.json";
+
+    async function pullLiveStatus(){
+      try {
+        const r = await fetch(STATUS_URL + "?t=" + Date.now(), { cache: "no-store" });
+        if (!r.ok) return;
+        const s = await r.json();
+        const nec = SERVERS.find(x => x.game === "Necesse");
+        if (!nec || !s.necesse) return;
+        if (s.necesse.status) nec.status = s.necesse.status;
+        if (typeof s.necesse.player_count === "number") nec.playersCurrent = s.necesse.player_count;
+        if (typeof s.necesse.max_players   === "number") nec.playersMax     = s.necesse.max_players;
+        render();
+      } catch {}
+    }
+
     render();
+    pullLiveStatus();
+    setInterval(pullLiveStatus, 60000);
   </script>
 </body>
 </html>
