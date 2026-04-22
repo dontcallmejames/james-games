@@ -29,6 +29,7 @@
       --nec:#ff8a3d;
       --ens:#14e1c6;
       --hyt:#8aa2ff;
+      --wnd:#f0b64e;
     }
 
     *{box-sizing:border-box}
@@ -440,19 +441,22 @@
     const ICONS = {
       Necesse: "🏰",
       Enshrouded: "🔥",
-      Hytale: "💎"
+      Hytale: "💎",
+      Windrose: "🏴‍☠️"
     };
 
     const ACCENTS = {
       Necesse: "--nec",
       Enshrouded: "--ens",
-      Hytale: "--hyt"
+      Hytale: "--hyt",
+      Windrose: "--wnd"
     };
 
     const CTA_TEXT = {
       Necesse: "Enter World",
       Enshrouded: "Enter Realm",
-      Hytale: "Begin Adventure"
+      Hytale: "Begin Adventure",
+      Windrose: "Set Sail"
     };
 
     const SERVERS = [
@@ -469,6 +473,14 @@
         pingMs: null,
         notes: "Join: Multiplayer → Join by IP (paste address). Password prompt will appear if needed.",
         connectUrl: "steam://run/1169040//-connect%20necesse.dontcallmejames.com%3A14159"
+      },
+      {
+        game: "Windrose",
+        type: "Windrose",
+        emoji: "🏴‍☠️",
+        status: "online",
+        joinCode: "9b202b29",
+        notes: "Join via server code in Windrose's multiplayer menu."
       },
       { game: "Enshrouded", type: "Enshrouded", emoji: "🔥", status: "coming", notes: "Coming soon." },
       { game: "Hytale", type: "Hytale", emoji: "🧊", status: "coming", notes: "Coming soon." }
@@ -506,8 +518,13 @@
 
     function addressOf(s){
       if (s.status !== "online") return "Coming soon";
+      if (s.joinCode) return s.joinCode;
       if (!s.host) return "Coming soon";
       return s.port ? `${s.host}:${s.port}` : `${s.host}`;
+    }
+
+    function addressLabel(s){
+      return s.joinCode ? "Server Code" : "Address";
     }
 
     async function copyToClipboard(text){
@@ -585,9 +602,9 @@
           <div class="addrBox">
             <div class="addrLeft">
               <span class="mI">🧾</span>
-              <div class="addrTxt" title="${escapeHtml(hasAddr ? addr : "Coming soon")}">${escapeHtml(hasAddr ? addr : "Coming soon")}</div>
+              <div class="addrTxt" title="${escapeHtml(hasAddr ? `${addressLabel(s)}: ${addr}` : "Coming soon")}">${escapeHtml(hasAddr ? addr : "Coming soon")}</div>
             </div>
-            <button class="iconBtn" ${hasAddr ? `data-copy="${escapeHtml(addr)}"` : "disabled"} title="Copy address">⧉</button>
+            <button class="iconBtn" ${hasAddr ? `data-copy="${escapeHtml(addr)}"` : "disabled"} title="Copy ${escapeHtml(addressLabel(s).toLowerCase())}">⧉</button>
           </div>
 
           <button class="cta ${s.status === "online" ? "ctaOnline" : "ctaComing"}" ${s.status === "online" ? `data-connect="${escapeHtml(addr)}"` : "disabled"}>
@@ -614,7 +631,7 @@
           connectBtn.addEventListener("click", async () => {
             await copyToClipboard(connectBtn.getAttribute("data-connect"));
             const prev = connectBtn.textContent;
-            connectBtn.textContent = "✓ Copied IP — paste in-game";
+            connectBtn.textContent = "✓ Copied — paste in-game";
             setTimeout(() => (connectBtn.textContent = prev), 1100);
           });
         }
@@ -662,6 +679,16 @@
             <li>Enter the server password when prompted.</li>
           </ol>
           <div class="note"><strong>Open in Steam:</strong> launches the game, but Steam may ignore auto-connect arguments. Copy IP is the reliable path.</div>
+        `;
+      } else if (game === "Windrose"){
+        helpTitle.textContent = "How to join — Windrose";
+        helpBody.innerHTML = `
+          <ol>
+            <li>Click <span class="k">Copy Server Code</span> on the Windrose card.</li>
+            <li>Open Windrose.</li>
+            <li>Go to <span class="k">Multiplayer</span>, paste the server code, and join.</li>
+          </ol>
+          <div class="note">Windrose uses a join code rather than an IP address — no port forwarding needed on your end.</div>
         `;
       } else {
         helpTitle.textContent = `How to join — ${game}`;
