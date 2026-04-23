@@ -23,6 +23,7 @@ SERVICE   = os.environ.get("SERVICE", "necesse.service")
 PING_HOST = os.environ.get("PING_HOST", "1.1.1.1")
 GIST_ID   = os.environ["GIST_ID"]
 GH_TOKEN  = os.environ["GH_TOKEN"]
+GIST_FILE = os.environ.get("GIST_FILE", "necesse.json")
 
 
 def systemctl(*args):
@@ -126,7 +127,7 @@ def build_status():
 
 def patch_gist(status):
     body = json.dumps({
-        "files": {"status.json": {"content": json.dumps(status, indent=2)}}
+        "files": {GIST_FILE: {"content": json.dumps(status, indent=2)}}
     }).encode()
     req = urllib.request.Request(
         f"https://api.github.com/gists/{GIST_ID}",

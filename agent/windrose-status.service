@@ -1,0 +1,10 @@
+[Unit]
+Description=Windrose status agent (pushes status to GitHub Gist)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=dontcallmejames
+EnvironmentFile=/home/dontcallmejames/windrose-server/status-agent/.env
+ExecStart=/usr/bin/python3 /home/dontcallmejames/windrose-server/status-agent/windrose-agent.py

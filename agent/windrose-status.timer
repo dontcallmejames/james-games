@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Windrose status agent every minute
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+Unit=windrose-status.service
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target
