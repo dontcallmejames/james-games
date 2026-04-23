@@ -1089,6 +1089,7 @@
           if (s.necesse.status) nec.status = s.necesse.status;
           if (typeof s.necesse.player_count === "number") nec.playersCurrent = s.necesse.player_count;
           if (typeof s.necesse.max_players   === "number") nec.playersMax     = s.necesse.max_players;
+          if (typeof s.necesse.upstream_ping_ms === "number") nec.pingMs = s.necesse.upstream_ping_ms;
           if (s.necesse.started_at) nec.startedAt = s.necesse.started_at;
         }
         if (s.updated_at){

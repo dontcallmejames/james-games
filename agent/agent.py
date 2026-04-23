@@ -18,10 +18,11 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-LOG_PATH = Path(os.environ.get("LOG_PATH", "/home/dontcallmejames/necesse-server/server.log"))
-SERVICE  = os.environ.get("SERVICE", "necesse.service")
-GIST_ID  = os.environ["GIST_ID"]
-GH_TOKEN = os.environ["GH_TOKEN"]
+LOG_PATH  = Path(os.environ.get("LOG_PATH", "/home/dontcallmejames/necesse-server/server.log"))
+SERVICE   = os.environ.get("SERVICE", "necesse.service")
+PING_HOST = os.environ.get("PING_HOST", "1.1.1.1")
+GIST_ID   = os.environ["GIST_ID"]
+GH_TOKEN  = os.environ["GH_TOKEN"]
 
 
 def systemctl(*args):
@@ -33,6 +34,27 @@ def service_state():
     active, _ = systemctl("is-active", SERVICE)
     ts, _ = systemctl("show", SERVICE, "--property=ActiveEnterTimestamp", "--value")
     return active, (ts or None)
+
+
+def upstream_ping_ms(host: str = PING_HOST) -> float | None:
+    """Ping a reference host and return average RTT in ms."""
+    try:
+        r = subprocess.run(
+            ["ping", "-c", "3", "-W", "2", "-q", host],
+            capture_output=True, text=True, timeout=10,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return None
+    if r.returncode != 0:
+        return None
+    # rtt min/avg/max/mdev = 11.891/12.367/12.856/0.395 ms
+    m = re.search(r"min/avg/max/[^=]+=\s*[\d.]+/([\d.]+)/", r.stdout)
+    if not m:
+        return None
+    try:
+        return round(float(m.group(1)), 1)
+    except ValueError:
+        return None
 
 
 # Confirmed Necesse 1.2.0 log formats:
@@ -97,6 +119,8 @@ def build_status():
         },
     }
     status["necesse"].update(parse_players(LOG_PATH))
+    status["necesse"]["upstream_ping_ms"] = upstream_ping_ms()
+    status["necesse"]["upstream_ping_target"] = PING_HOST
     return status
 
 
