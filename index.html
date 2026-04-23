@@ -101,19 +101,8 @@
         radial-gradient(ellipse at center, transparent 88%, rgba(0,0,0,.85) 100%);
     }
 
-    /* Very subtle flicker */
-    .crt-flicker{
-      position: fixed; inset: 0;
-      z-index: 56;
-      pointer-events: none;
-      background: rgba(255,255,255,.01);
-      animation: flicker 4s infinite steps(2);
-    }
-    @keyframes flicker{
-      0%,94%  { opacity: 0; }
-      95%,96% { opacity: 1; }
-      97%,100%{ opacity: 0; }
-    }
+    /* Flicker overlay removed — the scanlines + glow carry the CRT feel
+       without strobing the whole page every few seconds. */
 
     .shell{
       position: relative;
@@ -720,7 +709,6 @@
   <div class="crt-bg" aria-hidden="true"></div>
   <div class="crt-bezel" aria-hidden="true"></div>
   <div class="scanlines" aria-hidden="true"></div>
-  <div class="crt-flicker" aria-hidden="true"></div>
 
   <div class="shell">
 
@@ -908,13 +896,33 @@
       return String(Math.max(0, Math.floor(n))).padStart(width, "0");
     }
 
-    function render(){
-      grid.innerHTML = "";
+    // Windrose player count is unobservable from the host (matchmaker-relayed).
+    // Per-game flag so the row is omitted rather than showing "--".
+    const TRACKS_PLAYERS = {
+      Necesse: true,
+      Windrose: false,
+      Enshrouded: true,
+      Hytale: true,
+    };
 
+    function playersText(s){
+      if (typeof s.playersCurrent === "number" && typeof s.playersMax === "number"){
+        return `${String(s.playersCurrent).padStart(2,"0")} / ${String(s.playersMax).padStart(2,"0")}`;
+      }
+      if (typeof s.playersMax === "number") return `-- / ${String(s.playersMax).padStart(2,"0")}`;
+      return `--`;
+    }
+    function pingText(s){ return (typeof s.pingMs === "number") ? `${s.pingMs}ms` : `--`; }
+    function uptimeText(s){
+      const ms = parseSystemdTs(s.startedAt);
+      return ms ? fmtDuration(Date.now() - ms) : "--";
+    }
+
+    function updateScoreboard(){
       const total  = SERVERS.length;
       const online = SERVERS.filter(s => s.status === "online").length;
       const playerNums = SERVERS
-        .filter(s => s.status === "online" && typeof s.playersCurrent === "number")
+        .filter(s => s.status === "online" && TRACKS_PLAYERS[s.game] && typeof s.playersCurrent === "number")
         .map(s => s.playersCurrent);
       const playersSum = playerNums.length ? playerNums.reduce((a,b)=>a+b,0) : null;
 
@@ -922,7 +930,6 @@
       document.getElementById("stTotal").textContent   = padScore(total, 2);
       document.getElementById("stPlayers").textContent = playersSum === null ? "--" : padScore(playersSum, 3);
 
-      // HI-SCORE as a faux arcade scoreboard: online * 10k + players * 100 + uptime_minutes
       const starts = SERVERS
         .filter(s => s.status === "online" && s.startedAt)
         .map(s => parseSystemdTs(s.startedAt))
@@ -931,90 +938,166 @@
       const uptimeMin = earliest ? Math.floor((Date.now() - earliest) / 60000) : 0;
       const hi = online * 10000 + (playersSum || 0) * 100 + uptimeMin;
       document.getElementById("stHiScore").textContent = padScore(hi, 5);
+    }
 
-      SERVERS.forEach((s, idx) => {
-        const meta = statusMeta(s.status);
-        const endpoint = endpointOf(s);
-        const isReady = s.status === "online";
+    function buildCard(s, idx){
+      const meta = statusMeta(s.status);
+      const isReady = s.status === "online";
+      const showPlayers = TRACKS_PLAYERS[s.game] !== false;
 
-        const card = document.createElement("article");
-        card.className = `cab ${meta.cls}`;
-        card.style.setProperty("--stagger", String(idx));
+      const card = document.createElement("article");
+      card.className = `cab ${meta.cls}`;
+      card.style.setProperty("--stagger", String(idx));
+      card.dataset.game = s.game;
 
-        const playersText = (typeof s.playersCurrent === "number" && typeof s.playersMax === "number")
-          ? `${String(s.playersCurrent).padStart(2,"0")} / ${String(s.playersMax).padStart(2,"0")}`
-          : (typeof s.playersMax === "number"
-              ? `-- / ${String(s.playersMax).padStart(2,"0")}`
-              : `--`);
-        const pingText = (typeof s.pingMs === "number") ? `${s.pingMs}ms` : `--`;
-        const startedMs = parseSystemdTs(s.startedAt);
-        const uptimeText = startedMs ? fmtDuration(Date.now() - startedMs) : "--";
+      card.innerHTML = `
+        <div class="cab-head">
+          <div class="cab-id">${escapeHtml(TAGS[s.game] || "---")} <span class="slash">//</span> ${escapeHtml(s.game.toUpperCase())}</div>
+          <div class="cab-status" data-field="status">● ${escapeHtml(meta.label)}</div>
+        </div>
 
-        card.innerHTML = `
-          <div class="cab-head">
-            <div class="cab-id">${escapeHtml(TAGS[s.game] || "---")} <span class="slash">//</span> ${escapeHtml(s.game.toUpperCase())}</div>
-            <div class="cab-status">● ${escapeHtml(meta.label)}</div>
+        <h2 class="cab-title">${escapeHtml(s.game.toUpperCase())}</h2>
+        <div class="cab-tag">${escapeHtml(TAGLINES[s.game] || "")}</div>
+
+        <div class="cab-hud" aria-label="stats">
+          ${showPlayers ? `<div class="row"><span class="k">PLAYERS</span>  <span class="v" data-field="players">${playersText(s)}</span></div>` : ``}
+          <div class="row"><span class="k">LATENCY</span>  <span class="v" data-field="latency">${pingText(s)}</span></div>
+          <div class="row"><span class="k">UPTIME</span>   <span class="v" data-field="uptime">${uptimeText(s)}</span></div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-lbl">&gt; ${escapeHtml(endpointLabel(s))}</div>
+          <div class="endpoint-row">
+            <span class="caret">&gt;</span>
+            <code data-field="endpoint"></code>
+            <button class="copy-btn" data-field="copy">COPY</button>
           </div>
+        </div>
 
-          <h2 class="cab-title">${escapeHtml(s.game.toUpperCase())}</h2>
-          <div class="cab-tag">${escapeHtml(TAGLINES[s.game] || "")}</div>
+        <button class="start-btn" data-field="start">${isReady ? 'PRESS START' : meta.label}</button>
 
-          <div class="cab-hud" aria-label="stats">
-            <div class="row"><span class="k">PLAYERS</span>  <span class="v ${isReady ? 'hi' : 'dim'}">${playersText}</span></div>
-            <div class="row"><span class="k">LATENCY</span>  <span class="v ${typeof s.pingMs === 'number' ? '' : 'dim'}">${pingText}</span></div>
-            <div class="row"><span class="k">UPTIME</span>   <span class="v ${startedMs ? '' : 'dim'}">${uptimeText}</span></div>
-          </div>
+        <div class="sub-actions">
+          <button class="sub-btn" type="button" data-help="${escapeHtml(s.game)}">HOW TO PLAY</button>
+          ${s.connectUrl ? `<button class="sub-btn" type="button" data-steam="${escapeHtml(s.connectUrl)}">OPEN IN STEAM</button>` : ``}
+        </div>
+      `;
 
-          <div class="endpoint">
-            <div class="endpoint-lbl">&gt; ${escapeHtml(endpointLabel(s))}</div>
-            <div class="endpoint-row">
-              <span class="caret">&gt;</span>
-              <code class="${endpoint ? '' : 'dim'}" title="${escapeHtml(endpoint || 'not yet plugged in')}">${escapeHtml(endpoint || 'not plugged in')}</code>
-              <button class="copy-btn" ${endpoint ? `data-copy="${escapeHtml(endpoint)}"` : 'disabled'}>COPY</button>
-            </div>
-          </div>
+      // One-time event wiring (never re-attached on refresh)
+      const copyBtn = card.querySelector('[data-field="copy"]');
+      copyBtn.addEventListener("click", async () => {
+        const val = copyBtn.getAttribute("data-copy");
+        if (!val) return;
+        await copyToClipboard(val);
+        const prev = copyBtn.dataset.label || "COPY";
+        copyBtn.classList.add("got");
+        copyBtn.textContent = "GOT IT";
+        setTimeout(() => { copyBtn.classList.remove("got"); copyBtn.textContent = prev; }, 1200);
+      });
 
-          <button class="start-btn" ${endpoint ? `data-connect="${escapeHtml(endpoint)}"` : 'disabled'}>
-            ${isReady ? 'PRESS START' : meta.label}
-          </button>
+      const startBtn = card.querySelector('[data-field="start"]');
+      startBtn.addEventListener("click", async () => {
+        const val = startBtn.getAttribute("data-connect");
+        if (!val) return;
+        await copyToClipboard(val);
+        const prev = startBtn.dataset.label || "PRESS START";
+        startBtn.textContent = "✓ COPIED — PASTE IN-GAME";
+        setTimeout(() => { startBtn.textContent = prev; }, 1400);
+      });
 
-          <div class="sub-actions">
-            <button class="sub-btn" type="button" data-help="${escapeHtml(s.game)}">HOW TO PLAY</button>
-            ${s.connectUrl ? `<button class="sub-btn" type="button" data-steam="${escapeHtml(s.connectUrl)}">OPEN IN STEAM</button>` : ``}
-          </div>
-        `;
+      const steamBtn = card.querySelector(".sub-btn[data-steam]");
+      if (steamBtn){
+        steamBtn.addEventListener("click", () => {
+          window.location.href = steamBtn.getAttribute("data-steam");
+        });
+      }
+      const helpLink = card.querySelector(".sub-btn[data-help]");
+      if (helpLink){
+        helpLink.addEventListener("click", () => openHelp(s.game));
+      }
 
-        const copyBtn = card.querySelector(".copy-btn[data-copy]");
-        if (copyBtn){
-          copyBtn.addEventListener("click", async () => {
-            await copyToClipboard(copyBtn.getAttribute("data-copy"));
-            const prev = copyBtn.textContent;
-            copyBtn.classList.add("got");
-            copyBtn.textContent = "GOT IT";
-            setTimeout(() => { copyBtn.classList.remove("got"); copyBtn.textContent = prev; }, 1200);
-          });
+      return card;
+    }
+
+    function patchCard(card, s){
+      const meta = statusMeta(s.status);
+      const isReady = s.status === "online";
+      const endpoint = endpointOf(s);
+
+      // Only write if the new className differs — avoids forced style recalcs
+      const nextClass = `cab ${meta.cls}`;
+      if (card.className !== nextClass) card.className = nextClass;
+
+      const statusEl = card.querySelector('[data-field="status"]');
+      if (statusEl){
+        const next = `● ${meta.label}`;
+        if (statusEl.textContent !== next) statusEl.textContent = next;
+      }
+
+      const setField = (name, value, extraClass) => {
+        const el = card.querySelector(`[data-field="${name}"]`);
+        if (!el) return;
+        if (el.textContent !== value) el.textContent = value;
+        if (extraClass !== undefined){
+          el.classList.toggle("hi",  extraClass === "hi");
+          el.classList.toggle("dim", extraClass === "dim");
         }
-        const startBtn = card.querySelector(".start-btn[data-connect]");
-        if (startBtn){
-          startBtn.addEventListener("click", async () => {
-            await copyToClipboard(startBtn.getAttribute("data-connect"));
-            const prev = startBtn.textContent.trim();
-            startBtn.textContent = "✓ COPIED — PASTE IN-GAME";
-            setTimeout(() => { startBtn.textContent = prev; }, 1400);
-          });
-        }
-        const steamBtn = card.querySelector(".sub-btn[data-steam]");
-        if (steamBtn){
-          steamBtn.addEventListener("click", () => {
-            window.location.href = steamBtn.getAttribute("data-steam");
-          });
-        }
-        const helpLink = card.querySelector(".sub-btn[data-help]");
-        if (helpLink){
-          helpLink.addEventListener("click", () => openHelp(s.game));
-        }
+      };
 
-        grid.appendChild(card);
+      if (TRACKS_PLAYERS[s.game] !== false){
+        setField("players", playersText(s), isReady ? "hi" : "dim");
+      }
+      setField("latency", pingText(s),  typeof s.pingMs     === "number" ? "" : "dim");
+      setField("uptime",  uptimeText(s), parseSystemdTs(s.startedAt)     ? "" : "dim");
+
+      const codeEl = card.querySelector('[data-field="endpoint"]');
+      if (codeEl){
+        const display = endpoint || "not plugged in";
+        if (codeEl.textContent !== display) codeEl.textContent = display;
+        codeEl.title = endpoint || "not yet plugged in";
+        codeEl.classList.toggle("dim", !endpoint);
+      }
+
+      const copyBtn = card.querySelector('[data-field="copy"]');
+      if (copyBtn){
+        copyBtn.dataset.label = "COPY";
+        if (endpoint){
+          copyBtn.disabled = false;
+          copyBtn.setAttribute("data-copy", endpoint);
+        } else {
+          copyBtn.disabled = true;
+          copyBtn.removeAttribute("data-copy");
+        }
+      }
+
+      const startBtn = card.querySelector('[data-field="start"]');
+      if (startBtn){
+        const label = isReady ? "PRESS START" : meta.label;
+        startBtn.dataset.label = label;
+        // Don't overwrite mid-feedback text ("✓ COPIED — PASTE IN-GAME")
+        if (!startBtn.textContent.includes("COPIED") && startBtn.textContent.trim() !== label){
+          startBtn.textContent = label;
+        }
+        if (endpoint){
+          startBtn.disabled = false;
+          startBtn.setAttribute("data-connect", endpoint);
+        } else {
+          startBtn.disabled = true;
+          startBtn.removeAttribute("data-connect");
+        }
+      }
+    }
+
+    let built = false;
+    function render(){
+      updateScoreboard();
+      if (!built){
+        grid.replaceChildren(...SERVERS.map(buildCard));
+        built = true;
+      }
+      // Card values are always patched in place (first render included).
+      Array.from(grid.children).forEach((card, idx) => {
+        const s = SERVERS[idx];
+        if (s) patchCard(card, s);
       });
     }
 
