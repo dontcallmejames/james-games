@@ -33,6 +33,7 @@ CONFIG_PATH = Path(os.environ.get(
 ))
 SERVICE   = os.environ.get("SERVICE", "windrose.service")
 PING_HOST = os.environ.get("PING_HOST", "1.1.1.1")
+DIRECT_PORT = int(os.environ.get("DIRECT_PORT", "7777"))
 GIST_ID   = os.environ["GIST_ID"]
 GH_TOKEN  = os.environ["GH_TOKEN"]
 GIST_FILE = os.environ.get("GIST_FILE", "windrose.json")
@@ -68,6 +69,36 @@ def upstream_ping_ms(host: str = PING_HOST):
         return None
 
 
+def player_count_via_ss(port: int = DIRECT_PORT):
+    """Count established inbound TCP connections to the direct-connect port.
+
+    Excludes loopback remotes. Relies on `ss` being available on the host.
+    """
+    try:
+        r = subprocess.run(
+            ["ss", "-Htnap", "state", "established", f"sport = :{port}"],
+            capture_output=True, text=True, timeout=5,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return None
+    if r.returncode != 0:
+        return None
+    count = 0
+    for line in r.stdout.splitlines():
+        parts = line.split()
+        if len(parts) < 5:
+            continue
+        remote = parts[4]
+        # strip "[::ffff:x.x.x.x]:p" or "[::1]:p" or "x.x.x.x:p"
+        addr = remote.rsplit(":", 1)[0].strip("[]")
+        if addr.startswith("::ffff:"):
+            addr = addr[7:]
+        if addr.startswith("127.") or addr == "::1" or addr == "localhost":
+            continue
+        count += 1
+    return count
+
+
 def read_config(path: Path = CONFIG_PATH):
     out = {
         "server_name": None,
@@ -96,9 +127,11 @@ def build_status():
         "status": "online" if online else "offline",
         "service_state": active,
         "started_at": started,
-        # Log format doesn't currently support reliable player count extraction.
-        "player_count": None,
+        # Counted from live TCP connections to the direct-connect port;
+        # requires UseDirectConnection=true in ServerDescription.json.
+        "player_count": player_count_via_ss() if online else None,
         "online_players": [],
+        "direct_port": DIRECT_PORT,
         "upstream_ping_ms": upstream_ping_ms(),
         "upstream_ping_target": PING_HOST,
     }
