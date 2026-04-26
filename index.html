@@ -818,9 +818,8 @@
       },
       {
         game: "Windrose",
-        host: "windrose.dontcallmejames.com",
-        port: 7777,
         status: "online",
+        joinCode: "9b202b29",
         connectUrl: "steam://run/3041230"
       },
       { game: "Enshrouded", status: "coming" },
@@ -901,7 +900,7 @@
     // Per-game flag so the row is omitted rather than showing "--".
     const TRACKS_PLAYERS = {
       Necesse: true,
-      Windrose: true,
+      Windrose: false, // direct-connect off → no inbound socket to count
       Enshrouded: true,
       Hytale: true,
     };
@@ -1120,10 +1119,9 @@
           <ol>
             <li>Hit <span class="k">COPY</span> on the Windrose cabinet.</li>
             <li>Launch Windrose.</li>
-            <li>Open multiplayer → <span class="k">Direct Connect</span>, paste the address, and connect.</li>
-            <li>Enter the server passphrase when prompted.</li>
+            <li>Open multiplayer, paste the join code, set sail.</li>
           </ol>
-          <div class="note">Windrose's latest update added direct-IP connect. The old join code is disabled while direct-connect mode is on.</div>
+          <div class="note">Windrose uses a join-code matchmaker — no port forwarding required on your end.</div>
         `;
       } else {
         helpTitle.textContent = "MANUAL // INSERT COIN";
@@ -1198,6 +1196,7 @@
         if (typeof s.max_players   === "number") wnd.playersMax     = s.max_players;
         if (typeof s.upstream_ping_ms === "number") wnd.pingMs = s.upstream_ping_ms;
         if (s.started_at) wnd.startedAt = s.started_at;
+        if (s.invite_code) wnd.joinCode = s.invite_code;
       }
 
       const updates = [nData, wData]
