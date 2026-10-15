@@ -759,8 +759,8 @@
 
     <div class="howto">
       <div class="howto-text">
-        <strong>The rules are simple.</strong> Pick a cabinet that says READY. Copy its endpoint
-        (or join code for Windrose). Launch the game, paste, connect.
+        <strong>The rules are simple.</strong> Pick a cabinet that says READY. Copy its endpoint.
+        Launch the game, paste, connect.
         Standby cabinets aren't plugged in yet — but they will be.
       </div>
       <button class="howto-btn" id="helpBtn" type="button" aria-haspopup="dialog" aria-controls="helpModal">Open Manual</button>
@@ -793,13 +793,11 @@
   <script>
     const TAGS = {
       Necesse:    "NEC-01",
-      Windrose:   "WND-01",
       Enshrouded: "ENS-01",
       Hytale:     "HYT-01"
     };
     const TAGLINES = {
       Necesse:    "pixel survival sandbox",
-      Windrose:   "pirates · pvp · open sea",
       Enshrouded: "dark fantasy survival",
       Hytale:     "block-fantasy sandbox"
     };
@@ -817,12 +815,16 @@
         connectUrl: "steam://run/1169040//-connect%20necesse.dontcallmejames.com%3A14159"
       },
       {
-        game: "Windrose",
+        game: "Enshrouded",
+        host: "enshrouded.dontcallmejames.com",
+        port: 15637,
         status: "online",
-        joinCode: "9b202b29",
-        connectUrl: "steam://run/3041230"
+        playersCurrent: null,
+        playersMax: 16,
+        pingMs: null,
+        startedAt: null,
+        connectUrl: "steam://run/1203620"
       },
-      { game: "Enshrouded", status: "coming" },
       { game: "Hytale",     status: "coming" }
     ];
 
@@ -896,11 +898,9 @@
       return String(Math.max(0, Math.floor(n))).padStart(width, "0");
     }
 
-    // Windrose player count is unobservable from the host (matchmaker-relayed).
     // Per-game flag so the row is omitted rather than showing "--".
     const TRACKS_PLAYERS = {
       Necesse: true,
-      Windrose: false, // direct-connect off → no inbound socket to count
       Enshrouded: true,
       Hytale: true,
     };
@@ -1113,15 +1113,16 @@
           </ol>
           <div class="note"><strong>Open in Steam</strong> launches the game but Steam sometimes ignores auto-connect. Copy is the reliable play.</div>
         `;
-      } else if (game === "Windrose"){
-        helpTitle.textContent = "MANUAL // WINDROSE";
+      } else if (game === "Enshrouded"){
+        helpTitle.textContent = "MANUAL // ENSHROUDED";
         helpBody.innerHTML = `
           <ol>
-            <li>Hit <span class="k">COPY</span> on the Windrose cabinet.</li>
-            <li>Launch Windrose.</li>
-            <li>Open multiplayer, paste the join code, set sail.</li>
+            <li>Hit <span class="k">COPY</span> on the Enshrouded cabinet.</li>
+            <li>Hit <span class="k">OPEN IN STEAM</span> (or launch Enshrouded yourself).</li>
+            <li>Go to <span class="k">Play</span> → <span class="k">Join</span> → <span class="k">Search by IPv4 / Domain</span>, paste, and join.</li>
+            <li>Type the server passphrase when prompted.</li>
           </ol>
-          <div class="note">Windrose uses a join-code matchmaker — no port forwarding required on your end.</div>
+          <div class="note">Or just search the server list for <strong>James' Games</strong>. <strong>Open in Steam</strong> launches the game but can't auto-join — copy the endpoint first.</div>
         `;
       } else {
         helpTitle.textContent = "MANUAL // INSERT COIN";
@@ -1150,7 +1151,6 @@
     // ============== LIVE STATUS (gist) ==============
     const GIST_BASE    = "https://gist.githubusercontent.com/dontcallmejames/c9e5490e13425a40faecf953f838d579/raw";
     const NECESSE_URL  = `${GIST_BASE}/necesse.json`;
-    const WINDROSE_URL = `${GIST_BASE}/windrose.json`;
 
     function formatObservedShort(iso){
       try{
@@ -1173,9 +1173,8 @@
     }
 
     async function pullLiveStatus(){
-      const [nData, wData] = await Promise.all([
+      const [nData] = await Promise.all([
         fetchJson(NECESSE_URL),
-        fetchJson(WINDROSE_URL),
       ]);
 
       const nec = SERVERS.find(x => x.game === "Necesse");
@@ -1188,18 +1187,7 @@
         if (s.started_at) nec.startedAt = s.started_at;
       }
 
-      const wnd = SERVERS.find(x => x.game === "Windrose");
-      if (wnd && wData && wData.windrose){
-        const s = wData.windrose;
-        if (s.status) wnd.status = s.status;
-        if (typeof s.player_count === "number") wnd.playersCurrent = s.player_count;
-        if (typeof s.max_players   === "number") wnd.playersMax     = s.max_players;
-        if (typeof s.upstream_ping_ms === "number") wnd.pingMs = s.upstream_ping_ms;
-        if (s.started_at) wnd.startedAt = s.started_at;
-        if (s.invite_code) wnd.joinCode = s.invite_code;
-      }
-
-      const updates = [nData, wData]
+      const updates = [nData]
         .filter(d => d && d.updated_at)
         .map(d => d.updated_at)
         .sort();
