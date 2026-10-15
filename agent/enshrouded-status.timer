@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Enshrouded status agent every minute
+
+[Timer]
+OnBootSec=60s
+OnUnitActiveSec=60s
+Unit=enshrouded-status.service
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

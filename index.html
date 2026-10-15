@@ -1150,7 +1150,8 @@
 
     // ============== LIVE STATUS (gist) ==============
     const GIST_BASE    = "https://gist.githubusercontent.com/dontcallmejames/c9e5490e13425a40faecf953f838d579/raw";
-    const NECESSE_URL  = `${GIST_BASE}/necesse.json`;
+    const NECESSE_URL    = `${GIST_BASE}/necesse.json`;
+    const ENSHROUDED_URL = `${GIST_BASE}/enshrouded.json`;
 
     function formatObservedShort(iso){
       try{
@@ -1173,8 +1174,9 @@
     }
 
     async function pullLiveStatus(){
-      const [nData] = await Promise.all([
+      const [nData, eData] = await Promise.all([
         fetchJson(NECESSE_URL),
+        fetchJson(ENSHROUDED_URL),
       ]);
 
       const nec = SERVERS.find(x => x.game === "Necesse");
@@ -1187,7 +1189,17 @@
         if (s.started_at) nec.startedAt = s.started_at;
       }
 
-      const updates = [nData]
+      const ens = SERVERS.find(x => x.game === "Enshrouded");
+      if (ens && eData && eData.enshrouded){
+        const s = eData.enshrouded;
+        if (s.status) ens.status = s.status;
+        if (typeof s.player_count === "number") ens.playersCurrent = s.player_count;
+        if (typeof s.max_players   === "number") ens.playersMax     = s.max_players;
+        if (typeof s.upstream_ping_ms === "number") ens.pingMs = s.upstream_ping_ms;
+        if (s.started_at) ens.startedAt = s.started_at;
+      }
+
+      const updates = [nData, eData]
         .filter(d => d && d.updated_at)
         .map(d => d.updated_at)
         .sort();

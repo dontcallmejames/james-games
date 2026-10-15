@@ -1,0 +1,8 @@
+[Unit]
+Description=Enshrouded status agent (pushes status to GitHub Gist)
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/enshrouded/status.env
+ExecStart=/usr/bin/python3 %h/enshrouded/status-agent/enshrouded-agent.py
