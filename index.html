@@ -3,819 +3,459 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>JAMES' GAMES // INSERT COIN</title>
-  <meta name="description" content="James' Games — pick a cabinet and press start." />
-
+  <title>James' Games</title>
+  <meta name="description" content="Friends-only game servers run by James. See what's online, copy the address, and join." />
+  <meta name="theme-color" content="#0E0A24" />
   <link rel="icon" type="image/png" href="/favicon.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:           #09031a;
-      --bg-deep:      #050112;
-      --panel:        #0e0524;
-      --panel-up:     #14092e;
-      --panel-hi:     #1a0b38;
-      --border:       #2a1452;
-      --border-br:    #3d1d70;
+      --night:   #0E0A24;
+      --deep:    #160F33;
+      --rim:     #2B2058;
+      --plasma:  #FF4FB0;
+      --ion:     #45D9FF;
+      --volt:    #FFC53D;
+      --mist:    #C9BEEA;
+      --haze:    #8E81B8;
+      --paper:   #F6F2FF;
+      --neon:    linear-gradient(100deg, var(--plasma) 0%, #A86BFF 50%, var(--ion) 100%);
 
-      --magenta:      #ff2e88;
-      --magenta-glow: 0 0 6px #ff2e88, 0 0 18px rgba(255,46,136,.55), 0 0 34px rgba(255,46,136,.35);
-      --magenta-dim:  #a11556;
+      --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+      --body:    "Hanken Grotesk", system-ui, sans-serif;
 
-      --cyan:         #00e8ff;
-      --cyan-glow:    0 0 6px #00e8ff, 0 0 16px rgba(0,232,255,.55), 0 0 32px rgba(0,232,255,.3);
-      --cyan-dim:     #0077a0;
-
-      --yellow:       #ffd93d;
-      --yellow-glow:  0 0 6px #ffd93d, 0 0 18px rgba(255,217,61,.5);
-
-      --green:        #3dff7f;
-      --green-glow:   0 0 6px #3dff7f, 0 0 18px rgba(61,255,127,.55);
-
-      --red:          #ff3d5a;
-      --red-glow:     0 0 6px #ff3d5a, 0 0 16px rgba(255,61,90,.5);
-
-      --text:         #f4ecff;
-      --dim:          #c4a8e0;
-      --ghost:        #6b5285;
-      --whisper:      #38254e;
-
-      --mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-      --crt:   "VT323", "JetBrains Mono", monospace;
-      --pixel: "Press Start 2P", "VT323", monospace;
+      --gutter: clamp(16px, 4vw, 56px);
+      --max: 1280px;
     }
 
     *{ box-sizing: border-box; }
-    html,body{ margin:0; padding:0; }
-
+    html{ -webkit-text-size-adjust: 100%; }
     body{
-      font-family: var(--crt);
-      font-size: 20px;
-      line-height: 1.4;
-      color: var(--text);
-      background: var(--bg);
-      min-height: 100vh;
-      overflow-x: hidden;
+      margin: 0;
+      background: var(--night);
+      color: var(--paper);
+      font: 400 17px/1.55 var(--body);
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-
-    /* CRT backdrop — deep purple with two distant neon halos */
-    .crt-bg{
-      position: fixed; inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(1100px 700px at 12% -10%, rgba(255,46,136,.18), transparent 55%),
-        radial-gradient(1100px 700px at 88% 110%, rgba(0,232,255,.14), transparent 55%),
-        radial-gradient(900px 600px at 50% 60%, rgba(255,217,61,.05), transparent 60%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
-    }
-
-    /* Scanlines */
-    .scanlines{
-      position: fixed; inset: 0;
-      z-index: 60;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(0,0,0,0) 0px,
-        rgba(0,0,0,0) 2px,
-        rgba(0,0,0,.18) 3px,
-        rgba(0,0,0,0) 4px
-      );
-      mix-blend-mode: multiply;
-      opacity: .9;
-    }
-
-    /* CRT vignette / bezel curve */
-    .crt-bezel{
-      position: fixed; inset: 0;
-      z-index: 55;
-      pointer-events: none;
-      background:
-        radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,.55) 100%),
-        radial-gradient(ellipse at center, transparent 88%, rgba(0,0,0,.85) 100%);
-    }
-
-    /* Flicker overlay removed — the scanlines + glow carry the CRT feel
-       without strobing the whole page every few seconds. */
-
-    .shell{
-      position: relative;
-      z-index: 5;
-      max-width: 1240px;
-      margin: 0 auto;
-      padding: 24px 28px 80px;
-    }
-
-    /* ============== COIN STRIP ============== */
-    .coin-strip{
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      border: 1px solid var(--whisper);
-      font-family: var(--crt);
-      font-size: 18px;
-      color: var(--dim);
-      letter-spacing: .05em;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .coin-strip .blink{ color: var(--yellow); animation: blink 1.2s steps(2) infinite; text-shadow: var(--yellow-glow); }
-    .coin-strip .sep{ color: var(--whisper); margin: 0 6px; }
-    @keyframes blink{ 50%{ opacity: 0; } }
-    .coin-strip a{
-      color: var(--cyan);
-      text-decoration: none;
-      text-shadow: var(--cyan-glow);
-    }
-    .coin-strip a:hover{ color: var(--text); }
-
-    /* ============== MARQUEE HEADER ============== */
-    .marquee{
-      text-align: center;
-      padding: 36px 12px 24px;
-      position: relative;
-    }
-
-    .marquee-sup{
-      font-family: var(--crt);
-      color: var(--cyan);
-      font-size: 22px;
-      letter-spacing: .4em;
-      text-shadow: var(--cyan-glow);
-      margin-bottom: 6px;
-      opacity: .9;
-    }
-
-    .marquee-title{
-      font-family: var(--pixel);
-      font-size: clamp(28px, 6vw, 64px);
-      line-height: 1.05;
-      color: var(--text);
-      letter-spacing: .04em;
-      margin: 10px 0 14px;
-      /* chromatic aberration + neon bloom */
-      text-shadow:
-        -2px 0 0 var(--magenta),
-         2px 0 0 var(--cyan),
-         0 0 18px rgba(255,46,136,.45),
-         0 0 36px rgba(0,232,255,.28);
-      animation: marquee-in 1.4s cubic-bezier(.2,.7,.2,1) both;
-    }
-    .marquee-title .apos{ color: var(--yellow); text-shadow: 0 0 12px rgba(255,217,61,.5); }
-    @keyframes marquee-in{
-      0%  { opacity: 0; transform: translateY(8px) scale(.98); filter: blur(6px); }
-      100%{ opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-    }
-
-    .marquee-sub{
-      font-family: var(--crt);
-      color: var(--dim);
-      font-size: 22px;
-      letter-spacing: .25em;
-      margin: 0 auto;
-      max-width: 40ch;
-    }
-    .marquee-sub .cursor{
-      display: inline-block;
-      width: .55ch;
-      margin-left: 4px;
-      background: var(--magenta);
-      animation: blink 1s steps(2) infinite;
-      vertical-align: -2px;
-      height: 1em;
-    }
-
-    .marquee-rule{
-      display: flex; align-items: center; gap: 16px;
-      margin: 26px auto 0;
-      max-width: 760px;
-    }
-    .marquee-rule .rail{
-      flex: 1; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--magenta), transparent);
-      box-shadow: 0 0 8px rgba(255,46,136,.55);
-    }
-    .marquee-rule .rail.cyan{
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      box-shadow: 0 0 8px rgba(0,232,255,.5);
-    }
-    .marquee-rule .stars{
-      font-family: var(--crt);
-      font-size: 22px;
-      color: var(--yellow);
-      text-shadow: var(--yellow-glow);
-    }
-
-    /* ============== SCOREBOARD ============== */
-    .scoreboard{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 12px;
-      margin: 34px 0 28px;
-    }
-    .score{
-      border: 2px solid var(--whisper);
-      background: var(--panel);
-      padding: 16px 18px;
-      position: relative;
-      box-shadow: inset 0 0 30px rgba(255,46,136,.05);
-    }
-    .score::before{
+    /* Synthwave horizon from the logo art: a faint perspective grid under the intro */
+    body::before{
       content: "";
-      position: absolute; top: -1px; left: -1px; right: -1px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--magenta), var(--cyan));
-      opacity: .65;
-    }
-    .score-lbl{
-      font-family: var(--crt);
-      color: var(--dim);
-      font-size: 18px;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-    }
-    .score-val{
-      font-family: var(--pixel);
-      font-size: 26px;
-      color: var(--yellow);
-      text-shadow: var(--yellow-glow);
-      margin-top: 10px;
-      letter-spacing: .04em;
-      font-variant-numeric: tabular-nums;
-    }
-    .score-val .sub{
-      font-family: var(--crt);
-      font-size: 22px;
-      color: var(--ghost);
-      text-shadow: none;
-      margin-left: 6px;
-    }
-    .score.magenta .score-val{ color: var(--magenta); text-shadow: var(--magenta-glow); }
-    .score.cyan .score-val{ color: var(--cyan); text-shadow: var(--cyan-glow); }
-    .score.green .score-val{ color: var(--green); text-shadow: var(--green-glow); }
-
-    /* ============== SECTION LABEL ============== */
-    .sectlbl{
-      display: flex; align-items: center; gap: 14px;
-      margin: 34px 0 16px;
-      font-family: var(--pixel);
-      color: var(--cyan);
-      font-size: 13px;
-      letter-spacing: .18em;
-      text-shadow: var(--cyan-glow);
-    }
-    .sectlbl .tag{ color: var(--magenta); text-shadow: var(--magenta-glow); }
-    .sectlbl .rule{
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, var(--border-br), transparent);
-    }
-
-    /* ============== CABINET GRID ============== */
-    .cabinets{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 20px;
-    }
-
-    .cab{
-      --accent: var(--magenta);
-      --accent-glow: var(--magenta-glow);
-      position: relative;
+      position: absolute; inset: 0 0 auto 0;
+      height: 760px;
+      z-index: -1;
       background:
-        radial-gradient(500px 260px at 0% 0%, rgba(255,46,136,.06), transparent 60%),
-        radial-gradient(500px 260px at 100% 100%, rgba(0,232,255,.05), transparent 60%),
-        var(--panel);
-      border: 2px solid var(--whisper);
-      padding: 22px 22px 20px;
-      box-shadow:
-        inset 0 0 40px rgba(255,46,136,.06),
-        0 12px 36px rgba(0,0,0,.5);
-      animation: cab-in .6s cubic-bezier(.2,.7,.2,1) both;
-      animation-delay: calc(var(--stagger,0) * 110ms + 200ms);
+        radial-gradient(900px 420px at 78% 0%, rgba(255,79,176,.20), transparent 70%),
+        radial-gradient(800px 380px at 10% 10%, rgba(69,217,255,.12), transparent 70%);
     }
-    @keyframes cab-in{
-      0%  { opacity: 0; transform: translateY(10px); filter: blur(3px); }
-      100%{ opacity: 1; transform: translateY(0); filter: blur(0); }
-    }
-
-    /* Corner brackets */
-    .cab::before, .cab::after{
+    body::after{
       content: "";
-      position: absolute;
-      width: 16px; height: 16px;
-      border: 2px solid var(--accent);
-      box-shadow: var(--accent-glow);
+      position: absolute; left: 0; right: 0; top: 380px;
+      height: 380px;
+      z-index: -1;
+      background:
+        linear-gradient(to bottom, var(--night) 0%, transparent 30%, transparent 70%, var(--night) 100%),
+        repeating-linear-gradient(90deg, rgba(168,107,255,.16) 0 1px, transparent 1px 80px),
+        repeating-linear-gradient(0deg,  rgba(168,107,255,.16) 0 1px, transparent 1px 40px);
+      transform: perspective(500px) rotateX(58deg);
+      transform-origin: top center;
       pointer-events: none;
     }
-    .cab::before{ top: -2px; left: -2px; border-right: none; border-bottom: none; }
-    .cab::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
 
-    .cab.ready { --accent: var(--green); --accent-glow: var(--green-glow); }
-    .cab.ready { border-color: color-mix(in srgb, var(--green) 40%, var(--whisper)); }
+    a{ color: inherit; }
+    :focus-visible{ outline: 2px solid var(--volt); outline-offset: 3px; border-radius: 4px; }
+    .wrap{ max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
 
-    .cab.standby{ --accent: var(--ghost); --accent-glow: none; }
-    .cab.standby{ opacity: .7; filter: grayscale(.2); }
-
-    .cab.fault  { --accent: var(--red); --accent-glow: var(--red-glow); }
-    .cab.warn   { --accent: var(--yellow); --accent-glow: var(--yellow-glow); }
-
-    .cab-head{
-      display: flex; justify-content: space-between; align-items: baseline;
-      padding-bottom: 14px;
-      border-bottom: 1px dashed var(--whisper);
-      margin-bottom: 16px;
-      gap: 12px;
-    }
-    .cab-id{
-      font-family: var(--crt);
-      font-size: 20px;
-      color: var(--cyan);
-      letter-spacing: .18em;
-      text-shadow: var(--cyan-glow);
-    }
-    .cab-id .slash{ color: var(--ghost); text-shadow: none; }
-    .cab-status{
-      font-family: var(--pixel);
-      font-size: 11px;
-      letter-spacing: .14em;
-      color: var(--accent);
-      text-shadow: var(--accent-glow);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .cab.ready .cab-status{ animation: blink 1.4s steps(2) infinite; }
-
-    .cab-title{
-      font-family: var(--pixel);
-      font-size: clamp(18px, 2.4vw, 24px);
-      color: var(--text);
-      letter-spacing: .04em;
-      margin: 4px 0 4px;
-      text-shadow: 0 0 14px rgba(244,236,255,.25);
-      line-height: 1.2;
-    }
-    .cab-tag{
-      font-family: var(--crt);
-      color: var(--dim);
-      font-size: 20px;
-      letter-spacing: .12em;
-      margin-bottom: 16px;
-    }
-
-    /* Stat block (arcade HUD) */
-    .cab-hud{
-      background: rgba(5,1,18,.55);
-      border: 1px dashed var(--whisper);
-      padding: 10px 14px;
-      font-family: var(--crt);
-      font-size: 20px;
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      margin-bottom: 18px;
-    }
-    .cab-hud .row{
-      display: flex; justify-content: space-between; gap: 20px;
-    }
-    .cab-hud .k{
-      color: var(--dim);
-      letter-spacing: .14em;
-    }
-    .cab-hud .v{
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 16px;
-      font-variant-numeric: tabular-nums;
-    }
-    .cab-hud .v.hi { color: var(--green);   text-shadow: var(--green-glow); }
-    .cab-hud .v.dim{ color: var(--ghost); }
-
-    /* Endpoint */
-    .endpoint{
-      margin-bottom: 18px;
-    }
-    .endpoint-lbl{
-      font-family: var(--pixel);
-      font-size: 10px;
-      letter-spacing: .2em;
-      color: var(--cyan);
-      text-shadow: var(--cyan-glow);
-      margin-bottom: 8px;
-    }
-    .endpoint-row{
-      display: flex; align-items: center; gap: 10px;
-      background: var(--bg-deep);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      min-width: 0;
-    }
-    .endpoint-row .caret{
-      color: var(--magenta);
-      font-family: var(--crt);
-      font-size: 20px;
-      text-shadow: var(--magenta-glow);
-    }
-    .endpoint-row code{
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-family: var(--mono);
-      font-size: 13px;
-      color: var(--text);
-      letter-spacing: .02em;
-    }
-    .endpoint-row code.dim{ color: var(--ghost); font-style: italic; }
-    .copy-btn{
-      font-family: var(--pixel);
-      font-size: 9.5px;
-      letter-spacing: .18em;
-      color: var(--cyan);
-      background: transparent;
-      border: 2px solid color-mix(in srgb, var(--cyan) 35%, transparent);
-      padding: 8px 10px;
-      cursor: pointer;
-      flex: 0 0 auto;
-      transition: color .2s, border-color .2s, background .2s, box-shadow .2s;
-    }
-    .copy-btn:hover:not(:disabled){
-      color: var(--text);
-      border-color: var(--cyan);
-      background: rgba(0,232,255,.1);
-      box-shadow: var(--cyan-glow);
-    }
-    .copy-btn:disabled{ opacity: .3; cursor: not-allowed; }
-    .copy-btn.got{
-      color: var(--green);
-      border-color: var(--green);
-      text-shadow: var(--green-glow);
-      box-shadow: var(--green-glow);
-    }
-
-    /* Big PRESS START button */
-    .start-btn{
-      width: 100%;
-      font-family: var(--pixel);
-      font-size: 13px;
-      letter-spacing: .2em;
-      color: var(--text);
-      background: linear-gradient(180deg,
-        color-mix(in srgb, var(--accent) 28%, transparent),
-        color-mix(in srgb, var(--accent) 12%, transparent));
-      border: 2px solid var(--accent);
-      padding: 16px 16px;
-      cursor: pointer;
-      text-shadow: var(--accent-glow);
-      box-shadow: var(--accent-glow), inset 0 0 20px rgba(255,255,255,.05);
-      transition: transform .1s, background .2s, box-shadow .2s;
-      position: relative;
-    }
-    .start-btn::before{ content: "▶ "; color: var(--accent); }
-    .start-btn:hover:not(:disabled){
-      background: linear-gradient(180deg,
-        color-mix(in srgb, var(--accent) 45%, transparent),
-        color-mix(in srgb, var(--accent) 20%, transparent));
-    }
-    .start-btn:active:not(:disabled){ transform: translateY(1px); }
-    .start-btn:disabled{
-      opacity: .5;
-      cursor: not-allowed;
-      border-color: var(--whisper);
-      color: var(--ghost);
-      text-shadow: none;
-      box-shadow: none;
-      background: transparent;
-    }
-    .cab.ready .start-btn{ animation: start-pulse 2.4s ease-in-out infinite; }
-    @keyframes start-pulse{
-      0%,100%{ box-shadow: var(--accent-glow), inset 0 0 20px rgba(255,255,255,.05); }
-      50%   { box-shadow: 0 0 8px var(--accent), 0 0 28px var(--accent), 0 0 48px var(--accent), inset 0 0 24px rgba(255,255,255,.08); }
-    }
-
-    /* Sub-actions */
-    .sub-actions{
-      display: flex;
-      gap: 12px;
-      margin-top: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .sub-btn{
-      font-family: var(--crt);
-      font-size: 18px;
-      letter-spacing: .1em;
-      background: transparent;
-      border: none;
-      color: var(--dim);
-      cursor: pointer;
-      padding: 4px 8px;
-      text-decoration: none;
-      transition: color .2s, text-shadow .2s;
-    }
-    .sub-btn::before{ content: "→ "; color: var(--magenta); }
-    .sub-btn:hover{ color: var(--text); text-shadow: 0 0 8px rgba(255,255,255,.3); }
-
-    /* ============== HOW TO PLAY CARD ============== */
-    .howto{
-      margin-top: 40px;
-      padding: 22px 24px;
-      border: 2px solid var(--whisper);
-      background:
-        linear-gradient(90deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 40%),
-        var(--panel);
+    /* ---------- Top bar ---------- */
+    .bar{
       display: flex; align-items: center; justify-content: space-between;
-      gap: 20px; flex-wrap: wrap;
+      padding: 22px 0;
+      gap: 16px;
+    }
+    .brand{ display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand img{ width: 40px; height: 40px; border-radius: 10px; display: block; }
+    .brand span{
+      font: 800 26px/1 var(--display);
+      letter-spacing: .01em;
+    }
+    .bar nav{ display: flex; gap: 8px; }
+    .bar nav a{
+      font: 600 15px/1 var(--body);
+      text-decoration: none;
+      color: var(--mist);
+      padding: 10px 14px;
+      border-radius: 999px;
+      transition: color .15s, background .15s;
+    }
+    .bar nav a:hover{ color: var(--paper); background: rgba(255,255,255,.06); }
+    .bar nav a.discord{ color: var(--paper); background: rgba(255,255,255,.08); }
+
+    /* ---------- Intro ---------- */
+    .intro{ padding: clamp(48px, 9vw, 120px) 0 clamp(40px, 6vw, 72px); }
+    .intro h1{
+      font: 900 clamp(64px, 11vw, 148px)/.86 var(--display);
+      letter-spacing: -.01em;
+      margin: 0;
+      max-width: 9ch;
+      text-wrap: balance;
+    }
+    .intro h1 .bolt{
+      display: inline-block;
+      width: .42em; height: .78em;
+      margin: 0 .04em 0 .02em;
+      vertical-align: -.02em;
+      color: var(--volt);
+      filter: drop-shadow(0 0 14px rgba(255,197,61,.55));
+    }
+    .intro p{
+      max-width: 46ch;
+      margin: 28px 0 0;
+      font-size: clamp(18px, 1.6vw, 21px);
+      color: var(--mist);
+    }
+    .pulse{
+      display: inline-flex; align-items: center; gap: 12px;
+      margin-top: 30px;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--paper);
+    }
+    .pulse i{
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #45F0A0;
+      box-shadow: 0 0 0 0 rgba(69,240,160,.6);
+      animation: beacon 2.4s ease-out infinite;
+    }
+    .pulse.quiet i{ background: var(--haze); animation: none; }
+    @keyframes beacon{
+      0%  { box-shadow: 0 0 0 0 rgba(69,240,160,.55); }
+      70% { box-shadow: 0 0 0 12px rgba(69,240,160,0); }
+      100%{ box-shadow: 0 0 0 0 rgba(69,240,160,0); }
+    }
+
+    /* ---------- Server stages ---------- */
+    .stages{ display: grid; gap: 28px; padding-bottom: 28px; }
+
+    .stage{
       position: relative;
+      border-radius: 22px;
+      isolation: isolate;
+      background: var(--deep);
     }
-    .howto::before{
+    /* Neon edge — the logo's stroke, lit only for live servers */
+    .stage::before{
       content: "";
-      position: absolute; top: -2px; left: -2px; right: -2px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--yellow));
-      opacity: .7;
+      position: absolute; inset: -2px;
+      border-radius: 24px;
+      background: var(--neon);
+      z-index: -2;
+      opacity: 0;
     }
-    .howto-text{
-      font-family: var(--crt);
-      color: var(--dim);
-      font-size: 20px;
-      line-height: 1.35;
-      max-width: 60ch;
+    .stage::after{
+      content: "";
+      position: absolute; inset: -2px;
+      border-radius: 24px;
+      background: var(--neon);
+      filter: blur(26px);
+      z-index: -3;
+      opacity: 0;
     }
-    .howto-text strong{ color: var(--yellow); text-shadow: var(--yellow-glow); }
-    .howto-btn{
-      font-family: var(--pixel);
-      font-size: 11px;
-      letter-spacing: .18em;
-      color: var(--cyan);
-      background: transparent;
-      border: 2px solid var(--cyan);
-      padding: 12px 18px;
-      cursor: pointer;
-      text-shadow: var(--cyan-glow);
-      box-shadow: var(--cyan-glow);
-      transition: background .2s;
-      white-space: nowrap;
+    .stage.live::before{ opacity: 1; }
+    .stage.live::after{ opacity: .45; }
+    .stage.ignite::before,
+    .stage.ignite::after{ animation: ignite 1.3s steps(1, end) both; animation-delay: var(--delay, 0s); }
+    @keyframes ignite{
+      0%  { opacity: 0; }
+      12% { opacity: .9; }
+      18% { opacity: .1; }
+      30% { opacity: 1; }
+      36% { opacity: .25; }
+      48% { opacity: 1; }
+      100%{ opacity: 1; }
     }
-    .howto-btn:hover{ background: rgba(0,232,255,.12); }
+    .stage.ignite::after{ animation-name: ignite-glow; }
+    @keyframes ignite-glow{
+      0%,18%,36%{ opacity: 0; }
+      12%,30%{ opacity: .3; }
+      48%,100%{ opacity: .45; }
+    }
 
-    /* ============== FOOTER ============== */
-    footer.arc-foot{
-      margin-top: 50px;
-      padding-top: 20px;
-      border-top: 1px dashed var(--whisper);
-      font-family: var(--crt);
-      font-size: 18px;
-      color: var(--ghost);
-      text-align: center;
+    .stage-inner{
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr);
+      min-height: 420px;
+      background: var(--deep);
     }
-    footer.arc-foot a{
-      color: var(--cyan); text-decoration: none; text-shadow: var(--cyan-glow);
+    .art{
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center 35%;
+      z-index: 0;
     }
-    footer.arc-foot a:hover{ color: var(--text); }
-
-    /* ============== MODAL ============== */
-    .modal-backdrop{
-      position: fixed; inset: 0;
-      background: rgba(5,1,18,.85);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center; justify-content: center;
-      padding: 24px;
-      z-index: 90;
-    }
-    .modal-backdrop.show{ display: flex; }
-    .modal{
-      width: min(640px, 100%);
+    .art::after{
+      content: "";
+      position: absolute; inset: 0;
       background:
-        radial-gradient(400px 200px at 0% 0%, rgba(0,232,255,.12), transparent 60%),
-        var(--panel-up);
-      border: 2px solid var(--cyan);
-      box-shadow: var(--cyan-glow);
-      padding: 0;
-      position: relative;
+        linear-gradient(90deg, rgba(14,10,36,.05) 0%, rgba(14,10,36,.35) 45%, rgba(22,15,51,.94) 62%, var(--deep) 75%),
+        linear-gradient(0deg, rgba(14,10,36,.75) 0%, transparent 40%);
     }
-    .modal::before, .modal::after{
-      content: "";
-      position: absolute;
-      width: 18px; height: 18px;
-      border: 2px solid var(--cyan);
-      box-shadow: var(--cyan-glow);
-    }
-    .modal::before{ top: -2px; left: -2px; border-right: none; border-bottom: none; }
-    .modal::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+    .stage:not(.live) .art{ filter: grayscale(.85) brightness(.55); }
 
-    .modal-head{
-      padding: 16px 20px;
-      display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px dashed var(--whisper);
-      background: rgba(0,232,255,.04);
+    .showcase{
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: clamp(24px, 3.4vw, 44px);
+      gap: 14px;
     }
-    .modal-title{
-      font-family: var(--pixel);
-      font-size: 14px;
-      color: var(--cyan);
-      letter-spacing: .14em;
-      text-shadow: var(--cyan-glow);
+    .showcase .logo{
+      width: min(380px, 80%);
+      max-height: 170px;
+      object-fit: contain;
+      object-position: left bottom;
+      filter: drop-shadow(0 6px 24px rgba(0,0,0,.6));
     }
-    .modal-close{
-      font-family: var(--pixel);
-      font-size: 10px;
-      letter-spacing: .2em;
-      color: var(--magenta);
+    .showcase .wordmark{
+      font: 900 clamp(56px, 7vw, 96px)/.9 var(--display);
+      margin: 0;
+      text-shadow: 0 4px 30px rgba(0,0,0,.6);
+    }
+    .showcase .blurb{
+      margin: 0;
+      color: var(--paper);
+      opacity: .85;
+      max-width: 36ch;
+      font-size: 16px;
+      text-shadow: 0 1px 12px rgba(0,0,0,.8);
+    }
+
+    .panel{
+      position: relative; z-index: 1;
+      min-width: 0;
+      padding: clamp(24px, 3vw, 40px);
+      display: flex; flex-direction: column; gap: 22px;
+      justify-content: center;
+    }
+    .status{
+      display: inline-flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15px;
+    }
+    .status svg{ width: 14px; height: 22px; }
+    .status.online   { color: var(--volt); }
+    .status.restart  { color: #FFB86B; }
+    .status.offline  { color: #FF7A8A; }
+    .status.soon     { color: var(--haze); }
+
+    .facts{
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      justify-content: start;
+      gap: 6px 36px;
+      margin: 0;
+    }
+    .facts div{ display: flex; flex-direction: column-reverse; }
+    .facts dt{ font-size: 14px; color: var(--haze); }
+    .facts dd{
+      margin: 0;
+      font: 800 40px/1 var(--display);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .01em;
+    }
+    .facts dd small{ font-size: .55em; color: var(--mist); font-weight: 700; margin-left: 2px; }
+    .facts dd.empty{ color: var(--haze); }
+
+    .address{
+      display: flex; align-items: stretch;
+      background: rgba(14,10,36,.75);
+      border: 1px solid var(--rim);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .address-text{
+      flex: 1; min-width: 0;
+      padding: 12px 16px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .address-text span{ font-size: 13px; color: var(--haze); }
+    .address-text code{
+      font: 600 16px/1.3 var(--body);
+      color: var(--paper);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      user-select: all;
+    }
+    .copy{
+      flex: none;
+      border: 0;
+      border-left: 1px solid var(--rim);
       background: transparent;
-      border: 2px solid var(--magenta);
-      padding: 6px 10px;
+      color: var(--ion);
+      font: 700 15px/1 var(--body);
+      padding: 0 20px;
       cursor: pointer;
-      text-shadow: var(--magenta-glow);
-      box-shadow: var(--magenta-glow);
+      transition: background .15s, color .15s;
     }
-    .modal-close:hover{ background: rgba(255,46,136,.15); }
+    .copy:hover{ background: rgba(69,217,255,.1); }
+    .copy.done{ color: #45F0A0; }
 
-    .modal-body{
-      padding: 22px 22px 24px;
-      font-family: var(--crt);
-      font-size: 21px;
-      color: var(--text);
-      line-height: 1.45;
+    .actions{ display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn{
+      font: 700 16px/1 var(--body);
+      border-radius: 999px;
+      padding: 15px 24px;
+      cursor: pointer;
+      text-decoration: none;
+      border: 0;
+      display: inline-flex; align-items: center; gap: 10px;
+      white-space: nowrap;
+      transition: transform .12s ease, box-shadow .2s, background .2s;
     }
-    .modal-body ol{
-      padding-left: 28px;
-      margin: 10px 0 0;
-      counter-reset: step;
+    .btn:active{ transform: translateY(1px); }
+    .btn-launch{
+      color: #1A0B2E;
+      background: var(--volt);
+      box-shadow: 0 6px 24px rgba(255,197,61,.28);
+    }
+    .btn-launch:hover{ box-shadow: 0 8px 32px rgba(255,197,61,.45); }
+    .btn-launch svg{ width: 18px; height: 18px; }
+    .btn-ghost{
+      color: var(--paper);
+      background: rgba(255,255,255,.07);
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.12); }
+    .btn-ghost svg{ width: 14px; height: 14px; transition: transform .25s; }
+    .btn-ghost[aria-expanded="true"] svg{ transform: rotate(180deg); }
+
+    .steps{
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .3s ease;
+    }
+    .steps.open{ grid-template-rows: 1fr; }
+    .steps > div{ overflow: hidden; }
+    .steps ol{
+      margin: 0; padding: 4px 0 0;
       list-style: none;
+      counter-reset: step;
+      display: grid; gap: 12px;
     }
-    .modal-body ol li{
-      position: relative;
-      margin: 8px 0;
-    }
-    .modal-body ol li::before{
+    .steps li{
       counter-increment: step;
-      content: counter(step, decimal-leading-zero);
-      position: absolute;
-      left: -32px;
-      top: 2px;
-      font-family: var(--pixel);
-      font-size: 10px;
-      color: var(--magenta);
-      text-shadow: var(--magenta-glow);
+      display: grid; grid-template-columns: 30px 1fr; gap: 12px;
+      color: var(--mist);
+      font-size: 16px;
     }
-    .modal-body .k{
-      font-family: var(--mono);
-      color: var(--yellow);
-      background: rgba(255,217,61,.1);
-      padding: 0 6px;
-      font-size: 15px;
-      border: 1px solid color-mix(in srgb, var(--yellow) 25%, transparent);
+    .steps li::before{
+      content: counter(step);
+      width: 30px; height: 30px; border-radius: 50%;
+      display: grid; place-items: center;
+      font: 800 18px/1 var(--display);
+      color: var(--paper);
+      background: var(--rim);
     }
-    .modal-body .note{
-      margin-top: 18px;
-      padding: 12px 14px;
-      border-left: 3px solid var(--magenta);
-      background: rgba(255,46,136,.06);
-      color: var(--dim);
-      font-size: 19px;
-    }
-    .modal-body .note strong{ color: var(--text); }
+    .steps li b{ color: var(--paper); font-weight: 600; }
 
-    @media (max-width: 640px){
-      body{ font-size: 18px; }
-      .shell{ padding: 20px 18px 60px; }
-      .marquee{ padding: 18px 8px 8px; }
-      .cab{ padding: 20px 18px 18px; }
+    /* Coming-soon stage: slim, no art */
+    .stage.soon .stage-inner{
+      min-height: 0;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      background:
+        radial-gradient(600px 200px at 0% 0%, rgba(168,107,255,.14), transparent 70%),
+        var(--deep);
+      border: 1px dashed var(--rim);
+    }
+    .stage.soon .showcase{ padding: 32px clamp(24px, 3.4vw, 44px); }
+    .stage.soon .wordmark{ font-size: clamp(44px, 5vw, 64px); color: var(--mist); text-shadow: none; }
+    .stage.soon .panel{ padding: 32px clamp(24px, 3.4vw, 44px); }
+    .stage.soon .blurb{ text-shadow: none; color: var(--haze); opacity: 1; }
+
+    /* ---------- Footer ---------- */
+    footer{
+      margin-top: 72px;
+      border-top: 1px solid var(--rim);
+      padding: 32px 0 48px;
+      display: flex; flex-wrap: wrap; gap: 16px 32px;
+      justify-content: space-between; align-items: center;
+      color: var(--haze);
+      font-size: 15px;
+    }
+    footer nav{ display: flex; gap: 22px; }
+    footer a{ color: var(--mist); text-decoration: none; }
+    footer a:hover{ color: var(--paper); }
+
+    .sr{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px){
+      .stage-inner{ grid-template-columns: minmax(0, 1fr); min-height: 0; }
+      .art{ position: relative; inset: auto; height: 240px; grid-area: 1 / 1; }
+      .art::after{ background: linear-gradient(0deg, var(--deep) 0%, rgba(22,15,51,.2) 55%, transparent 100%); }
+      .showcase{ grid-area: 1 / 1; padding-bottom: 12px; min-height: 240px; }
+      .showcase .logo{ max-height: 110px; width: min(280px, 75%); }
+      .showcase .blurb{ display: none; }
+      .panel{ padding-top: 8px; }
+      .stage.soon .stage-inner{ grid-template-columns: 1fr; }
+      .stage.soon .showcase{ min-height: 0; padding-bottom: 0; }
+      .stage.soon .panel{ padding-top: 12px; }
+      .stage.soon .showcase .blurb{ display: block; }
+    }
+    @media (max-width: 520px){
+      .brand span{ display: none; }
+      .facts{ gap: 6px 24px; }
+      .facts dd{ font-size: 32px; }
+      .actions .btn{ flex: 1 1 100%; justify-content: center; }
     }
 
     @media (prefers-reduced-motion: reduce){
-      *, *::before, *::after{
-        animation-duration: .001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .001ms !important;
-      }
+      *, *::before, *::after{ animation: none !important; transition: none !important; }
     }
   </style>
 </head>
 <body>
-  <div class="crt-bg" aria-hidden="true"></div>
-  <div class="crt-bezel" aria-hidden="true"></div>
-  <div class="scanlines" aria-hidden="true"></div>
-
-  <div class="shell">
-
-    <div class="coin-strip">
-      <span><span class="blink">● INSERT COIN</span><span class="sep">│</span>CREDITS: <span style="color:var(--yellow)">∞</span></span>
-      <span><a href="https://discord.gg/JzhCXC2wGk" target="_blank" rel="noopener">[ DISCORD HOTLINE ]</a></span>
-    </div>
-
-    <header class="marquee">
-      <div class="marquee-sup">— SELECT YOUR GAME —</div>
-      <h1 class="marquee-title">JAMES<span class="apos">'</span> GAMES</h1>
-      <div class="marquee-sub">pick a cabinet · copy the address · press start<span class="cursor"></span></div>
-      <div class="marquee-rule">
-        <div class="rail"></div>
-        <div class="stars">★ ★ ★</div>
-        <div class="rail cyan"></div>
-      </div>
+  <div class="wrap">
+    <header class="bar">
+      <a class="brand" href="/" aria-label="James' Games home">
+        <img src="favicon.png" alt="" width="40" height="40" />
+        <span>James' Games</span>
+      </a>
+      <nav aria-label="Links">
+        <a href="https://github.com/dontcallmejames/james-games" target="_blank" rel="noopener">Source</a>
+        <a class="discord" href="https://discord.gg/JzhCXC2wGk" target="_blank" rel="noopener">Join the Discord</a>
+      </nav>
     </header>
 
-    <section class="scoreboard" aria-label="scoreboard">
-      <div class="score green">
-        <div class="score-lbl">STAGES ONLINE</div>
-        <div class="score-val"><span id="stOnline">--</span><span class="sub">/ <span id="stTotal">--</span></span></div>
-      </div>
-      <div class="score magenta">
-        <div class="score-lbl">PLAYERS</div>
-        <div class="score-val" id="stPlayers">--</div>
-      </div>
-      <div class="score cyan">
-        <div class="score-lbl">HI-SCORE</div>
-        <div class="score-val" id="stHiScore">00000</div>
-      </div>
-      <div class="score">
-        <div class="score-lbl">LAST PING</div>
-        <div class="score-val" id="stLast" style="font-size:18px">--</div>
-      </div>
+    <section class="intro">
+      <h1>James<svg class="bolt" viewBox="0 0 24 44" aria-hidden="true"><path fill="currentColor" d="M15 0 3 25h8L7 44l15-27h-9z"/></svg> Games</h1>
+      <p>Private servers for the crew. Pick a world, copy its address, and join from inside the game. Ask James for the password.</p>
+      <div class="pulse quiet" id="pulse" aria-live="polite"><i></i><span id="pulseText">Checking the servers…</span></div>
     </section>
 
-    <div class="sectlbl">
-      <span class="tag">&gt;</span>SELECT CABINET<span class="rule"></span>
-    </div>
+    <main class="stages" id="stages" aria-label="Servers"></main>
 
-    <section class="cabinets" id="grid"></section>
-
-    <div class="sectlbl" style="margin-top:44px">
-      <span class="tag">&gt;</span>HOW TO PLAY<span class="rule"></span>
-    </div>
-
-    <div class="howto">
-      <div class="howto-text">
-        <strong>The rules are simple.</strong> Pick a cabinet that says READY. Copy its endpoint.
-        Launch the game, paste, connect.
-        Standby cabinets aren't plugged in yet — but they will be.
-      </div>
-      <button class="howto-btn" id="helpBtn" type="button" aria-haspopup="dialog" aria-controls="helpModal">Open Manual</button>
-    </div>
-
-    <footer class="arc-foot">
-      <div>JAMES' GAMES ARCADE // EST. 2025 // <a href="https://github.com/dontcallmejames/james-games" target="_blank" rel="noopener">SOURCE</a></div>
-      <div style="margin-top:6px;font-size:15px;color:var(--ghost)">TELEMETRY <span id="lastObserved">AWAITING...</span></div>
+    <footer>
+      <span id="observed">Live status refreshes every minute.</span>
+      <nav aria-label="Footer">
+        <a href="https://discord.gg/JzhCXC2wGk" target="_blank" rel="noopener">Discord</a>
+        <a href="https://github.com/dontcallmejames/james-games" target="_blank" rel="noopener">Source</a>
+      </nav>
     </footer>
   </div>
 
-  <div class="modal-backdrop" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-    <div class="modal">
-      <div class="modal-head">
-        <div class="modal-title" id="helpTitle">MANUAL // INSERT COIN</div>
-        <button class="modal-close" id="helpClose" type="button" aria-label="Close">ESC</button>
-      </div>
-      <div class="modal-body" id="helpBody">
-        <ol>
-          <li>Find a cabinet marked <span class="k">READY</span>.</li>
-          <li>Hit <span class="k">COPY</span> on the endpoint.</li>
-          <li>Launch the game. Paste into its multiplayer / join-by-IP dialog.</li>
-          <li>Type the passphrase if it asks.</li>
-        </ol>
-        <div class="note"><strong>Steam shortcut</strong> opens the game but doesn't always auto-connect. Copying the endpoint is the reliable play.</div>
-      </div>
-    </div>
-  </div>
-
   <script>
-    const TAGS = {
-      Necesse:    "NEC-01",
-      Enshrouded: "ENS-01",
-      Hytale:     "HYT-01"
-    };
-    const TAGLINES = {
-      Necesse:    "pixel survival sandbox",
-      Enshrouded: "dark fantasy survival",
-      Hytale:     "block-fantasy sandbox"
-    };
+    const STEAM_ART = (id, f) => `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${id}/${f}`;
 
     const SERVERS = [
       {
-        game: "Necesse",
-        host: "necesse.dontcallmejames.com",
-        port: 14159,
-        status: "online",
-        playersCurrent: null,
-        playersMax: null,
-        pingMs: null,
-        startedAt: null,
-        connectUrl: "steam://run/1169040//-connect%20necesse.dontcallmejames.com%3A14159"
-      },
-      {
         game: "Enshrouded",
+        blurb: "Survival and base-building in a world swallowed by the Shroud. Up to 16 of us.",
+        art:  STEAM_ART(1203620, "library_hero.jpg"),
+        logo: STEAM_ART(1203620, "logo.png"),
         host: "enshrouded.dontcallmejames.com",
         port: 15637,
         status: "online",
@@ -823,392 +463,273 @@
         playersMax: 16,
         pingMs: null,
         startedAt: null,
-        connectUrl: "steam://run/1203620"
+        connectUrl: "steam://run/1203620",
+        steps: [
+          "Copy the address above.",
+          "Launch Enshrouded.",
+          "Go to <b>Play</b>, then <b>Join</b>, then <b>Search by IPv4 / Domain</b>. Paste the address, or search the list for <b>James' Games</b>.",
+          "Enter the password when it asks."
+        ]
       },
-      { game: "Hytale",     status: "coming" }
+      {
+        game: "Necesse",
+        blurb: "Top-down pixel survival. Build a settlement, raid dungeons, and recruit settlers.",
+        art:  STEAM_ART(1169040, "library_hero.jpg"),
+        logo: STEAM_ART(1169040, "logo.png"),
+        host: "necesse.dontcallmejames.com",
+        port: 14159,
+        status: "online",
+        playersCurrent: null,
+        playersMax: null,
+        pingMs: null,
+        startedAt: null,
+        connectUrl: "steam://run/1169040//-connect%20necesse.dontcallmejames.com%3A14159",
+        steps: [
+          "Copy the address above.",
+          "Launch Necesse. <b>Launch in Steam</b> tries to join for you, but Steam sometimes skips that part.",
+          "Go to <b>Multiplayer</b>, then <b>Join by IP</b>. Paste the address and join.",
+          "Enter the password when it asks."
+        ]
+      },
+      {
+        game: "Hytale",
+        blurb: "Next on the list. This server isn't set up yet.",
+        status: "coming"
+      }
     ];
 
-    const grid     = document.getElementById("grid");
-    const helpBtn  = document.getElementById("helpBtn");
-    const helpModal= document.getElementById("helpModal");
-    const helpClose= document.getElementById("helpClose");
-    const helpTitle= document.getElementById("helpTitle");
-    const helpBody = document.getElementById("helpBody");
+    const STATUS = {
+      online:      { cls: "online",  label: "Online" },
+      maintenance: { cls: "restart", label: "Restarting" },
+      offline:     { cls: "offline", label: "Offline" },
+      coming:      { cls: "soon",    label: "Coming soon" }
+    };
+    const BOLT = `<svg viewBox="0 0 24 44" aria-hidden="true"><path fill="currentColor" d="M15 0 3 25h8L7 44l15-27h-9z"/></svg>`;
+    const DOT  = `<svg viewBox="0 0 14 22" aria-hidden="true"><circle cx="7" cy="11" r="5" fill="currentColor"/></svg>`;
 
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
-      }[m]));
-    }
-
-    function statusMeta(s){
-      if (s === "online")      return { label: "READY",       cls: "ready" };
-      if (s === "maintenance") return { label: "MAINTENANCE", cls: "warn"  };
-      if (s === "offline")     return { label: "OFFLINE",     cls: "fault" };
-      return                         { label: "STANDBY",     cls: "standby" };
-    }
-
-    function endpointOf(s){
-      if (s.status !== "online") return null;
-      if (s.joinCode) return s.joinCode;
-      if (!s.host) return null;
-      return s.port ? `${s.host}:${s.port}` : s.host;
-    }
-    function endpointLabel(s){ return s.joinCode ? "JOIN CODE" : "ENDPOINT"; }
-
-    async function copyToClipboard(text){
-      try { await navigator.clipboard.writeText(text); }
-      catch {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        ta.remove();
-      }
-    }
-
-    function fmtDuration(ms){
-      if (ms == null || !Number.isFinite(ms) || ms < 0) return "--";
-      const s = Math.floor(ms/1000);
-      const d = Math.floor(s/86400);
-      const h = Math.floor((s%86400)/3600);
-      const m = Math.floor((s%3600)/60);
-      if (d >= 1) return `${d}d ${String(h).padStart(2,"0")}h`;
-      if (h >= 1) return `${h}h ${String(m).padStart(2,"0")}m`;
-      return `${m}m`;
+    function esc(str){
+      return String(str).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m]));
     }
 
     function parseSystemdTs(str){
       if (!str) return null;
       const m = str.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\s+([A-Z]{2,5})?/);
       if (!m) return null;
-      const [_, Y, Mo, D, h, mi, se, tz] = m;
+      const [, Y, Mo, D, h, mi, se, tz] = m;
       const tzMap = { UTC: 0, EST: -5, EDT: -4, CST: -6, CDT: -5, MST: -7, MDT: -6, PST: -8, PDT: -7 };
       const offH = tz && tzMap[tz] != null ? tzMap[tz] : null;
-      if (offH == null){
-        return new Date(`${Y}-${Mo}-${D}T${h}:${mi}:${se}`).getTime();
-      }
+      if (offH == null) return new Date(`${Y}-${Mo}-${D}T${h}:${mi}:${se}`).getTime();
       const sign = offH >= 0 ? "+" : "-";
-      const abs = String(Math.abs(offH)).padStart(2,"0");
+      const abs = String(Math.abs(offH)).padStart(2, "0");
       return new Date(`${Y}-${Mo}-${D}T${h}:${mi}:${se}${sign}${abs}:00`).getTime();
     }
 
-    function padScore(n, width=5){
-      return String(Math.max(0, Math.floor(n))).padStart(width, "0");
+    function uptimeParts(s){
+      const t = parseSystemdTs(s.startedAt);
+      if (!t) return null;
+      const sec = Math.max(0, Math.floor((Date.now() - t) / 1000));
+      const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60);
+      if (d) return [d, "d", h, "h"];
+      if (h) return [h, "h", m, "m"];
+      return [m, "m"];
     }
 
-    // Per-game flag so the row is omitted rather than showing "--".
-    const TRACKS_PLAYERS = {
-      Necesse: true,
-      Enshrouded: true,
-      Hytale: true,
-    };
+    function endpointOf(s){ return s.host ? (s.port ? `${s.host}:${s.port}` : s.host) : null; }
 
-    function playersText(s){
-      if (typeof s.playersCurrent === "number" && typeof s.playersMax === "number"){
-        return `${String(s.playersCurrent).padStart(2,"0")} / ${String(s.playersMax).padStart(2,"0")}`;
+    async function copyText(text){
+      try { await navigator.clipboard.writeText(text); }
+      catch {
+        const ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); ta.remove();
       }
-      if (typeof s.playersMax === "number") return `-- / ${String(s.playersMax).padStart(2,"0")}`;
-      return `--`;
-    }
-    function pingText(s){ return (typeof s.pingMs === "number") ? `${s.pingMs}ms` : `--`; }
-    function uptimeText(s){
-      const ms = parseSystemdTs(s.startedAt);
-      return ms ? fmtDuration(Date.now() - ms) : "--";
     }
 
-    function updateScoreboard(){
-      const total  = SERVERS.length;
-      const online = SERVERS.filter(s => s.status === "online").length;
-      const playerNums = SERVERS
-        .filter(s => s.status === "online" && TRACKS_PLAYERS[s.game] && typeof s.playersCurrent === "number")
-        .map(s => s.playersCurrent);
-      const playersSum = playerNums.length ? playerNums.reduce((a,b)=>a+b,0) : null;
+    function buildStage(s, idx){
+      const el = document.createElement("article");
+      el.className = "stage";
+      el.dataset.game = s.game;
+      el.setAttribute("aria-label", s.game);
 
-      document.getElementById("stOnline").textContent  = padScore(online, 2);
-      document.getElementById("stTotal").textContent   = padScore(total, 2);
-      document.getElementById("stPlayers").textContent = playersSum === null ? "--" : padScore(playersSum, 3);
+      if (s.status === "coming"){
+        el.classList.add("soon");
+        el.innerHTML = `
+          <div class="stage-inner">
+            <div class="showcase">
+              <h2 class="wordmark">${esc(s.game)}</h2>
+              <p class="blurb">${esc(s.blurb)}</p>
+            </div>
+            <div class="panel"><span class="status soon">${DOT} Coming soon</span></div>
+          </div>`;
+        return el;
+      }
 
-      const starts = SERVERS
-        .filter(s => s.status === "online" && s.startedAt)
-        .map(s => parseSystemdTs(s.startedAt))
-        .filter(Boolean);
-      const earliest = starts.length ? Math.min(...starts) : null;
-      const uptimeMin = earliest ? Math.floor((Date.now() - earliest) / 60000) : 0;
-      const hi = online * 10000 + (playersSum || 0) * 100 + uptimeMin;
-      document.getElementById("stHiScore").textContent = padScore(hi, 5);
-    }
-
-    function buildCard(s, idx){
-      const meta = statusMeta(s.status);
-      const isReady = s.status === "online";
-      const showPlayers = TRACKS_PLAYERS[s.game] !== false;
-
-      const card = document.createElement("article");
-      card.className = `cab ${meta.cls}`;
-      card.style.setProperty("--stagger", String(idx));
-      card.dataset.game = s.game;
-
-      card.innerHTML = `
-        <div class="cab-head">
-          <div class="cab-id">${escapeHtml(TAGS[s.game] || "---")} <span class="slash">//</span> ${escapeHtml(s.game.toUpperCase())}</div>
-          <div class="cab-status" data-field="status">● ${escapeHtml(meta.label)}</div>
-        </div>
-
-        <h2 class="cab-title">${escapeHtml(s.game.toUpperCase())}</h2>
-        <div class="cab-tag">${escapeHtml(TAGLINES[s.game] || "")}</div>
-
-        <div class="cab-hud" aria-label="stats">
-          ${showPlayers ? `<div class="row"><span class="k">PLAYERS</span>  <span class="v" data-field="players">${playersText(s)}</span></div>` : ``}
-          <div class="row"><span class="k">LATENCY</span>  <span class="v" data-field="latency">${pingText(s)}</span></div>
-          <div class="row"><span class="k">UPTIME</span>   <span class="v" data-field="uptime">${uptimeText(s)}</span></div>
-        </div>
-
-        <div class="endpoint">
-          <div class="endpoint-lbl">&gt; ${escapeHtml(endpointLabel(s))}</div>
-          <div class="endpoint-row">
-            <span class="caret">&gt;</span>
-            <code data-field="endpoint"></code>
-            <button class="copy-btn" data-field="copy">COPY</button>
+      const ep = endpointOf(s);
+      const stepsId = `steps-${idx}`;
+      el.innerHTML = `
+        <div class="stage-inner">
+          <div class="art" style="background-image:url('${s.art}')"></div>
+          <div class="showcase">
+            <img class="logo" src="${s.logo}" alt="${esc(s.game)}" loading="lazy" />
+            <p class="blurb">${esc(s.blurb)}</p>
           </div>
-        </div>
+          <div class="panel">
+            <span class="status" data-f="status"></span>
+            <dl class="facts">
+              <div><dt>Playing now</dt><dd data-f="players"></dd></div>
+              <div><dt>Up for</dt><dd data-f="uptime"></dd></div>
+              <div><dt>Latency</dt><dd data-f="ping"></dd></div>
+            </dl>
+            <div class="address">
+              <div class="address-text">
+                <span>Server address</span>
+                <code>${esc(ep)}</code>
+              </div>
+              <button class="copy" type="button" data-copy="${esc(ep)}">Copy</button>
+            </div>
+            <div class="actions">
+              <a class="btn btn-launch" href="${esc(s.connectUrl)}">${BOLT}Launch in Steam</a>
+              <button class="btn btn-ghost" type="button" aria-expanded="false" aria-controls="${stepsId}">How to join
+                <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <div class="steps" id="${stepsId}">
+              <div><ol>${s.steps.map(t => `<li><span>${t}</span></li>`).join("")}</ol></div>
+            </div>
+          </div>
+        </div>`;
 
-        <button class="start-btn" data-field="start">${isReady ? 'PRESS START' : meta.label}</button>
+      // Hide the logo cleanly if Steam's CDN doesn't serve it; fall back to a wordmark.
+      const logo = el.querySelector(".logo");
+      logo.addEventListener("error", () => {
+        const h = document.createElement("h2");
+        h.className = "wordmark"; h.textContent = s.game;
+        logo.replaceWith(h);
+      }, { once: true });
 
-        <div class="sub-actions">
-          <button class="sub-btn" type="button" data-help="${escapeHtml(s.game)}">HOW TO PLAY</button>
-          ${s.connectUrl ? `<button class="sub-btn" type="button" data-steam="${escapeHtml(s.connectUrl)}">OPEN IN STEAM</button>` : ``}
-        </div>
-      `;
-
-      // One-time event wiring (never re-attached on refresh)
-      const copyBtn = card.querySelector('[data-field="copy"]');
+      const copyBtn = el.querySelector(".copy");
       copyBtn.addEventListener("click", async () => {
-        const val = copyBtn.getAttribute("data-copy");
-        if (!val) return;
-        await copyToClipboard(val);
-        const prev = copyBtn.dataset.label || "COPY";
-        copyBtn.classList.add("got");
-        copyBtn.textContent = "GOT IT";
-        setTimeout(() => { copyBtn.classList.remove("got"); copyBtn.textContent = prev; }, 1200);
+        await copyText(copyBtn.dataset.copy);
+        copyBtn.textContent = "Copied";
+        copyBtn.classList.add("done");
+        setTimeout(() => { copyBtn.textContent = "Copy"; copyBtn.classList.remove("done"); }, 1600);
       });
 
-      const startBtn = card.querySelector('[data-field="start"]');
-      startBtn.addEventListener("click", async () => {
-        const val = startBtn.getAttribute("data-connect");
-        if (!val) return;
-        await copyToClipboard(val);
-        const prev = startBtn.dataset.label || "PRESS START";
-        startBtn.textContent = "✓ COPIED — PASTE IN-GAME";
-        setTimeout(() => { startBtn.textContent = prev; }, 1400);
+      const toggle = el.querySelector(".btn-ghost");
+      const steps  = el.querySelector(".steps");
+      toggle.addEventListener("click", () => {
+        const open = toggle.getAttribute("aria-expanded") !== "true";
+        toggle.setAttribute("aria-expanded", String(open));
+        steps.classList.toggle("open", open);
       });
 
-      const steamBtn = card.querySelector(".sub-btn[data-steam]");
-      if (steamBtn){
-        steamBtn.addEventListener("click", () => {
-          window.location.href = steamBtn.getAttribute("data-steam");
-        });
-      }
-      const helpLink = card.querySelector(".sub-btn[data-help]");
-      if (helpLink){
-        helpLink.addEventListener("click", () => openHelp(s.game));
-      }
-
-      return card;
+      return el;
     }
 
-    function patchCard(card, s){
-      const meta = statusMeta(s.status);
-      const isReady = s.status === "online";
-      const endpoint = endpointOf(s);
+    function patchStage(el, s){
+      if (s.status === "coming") return;
+      const st = STATUS[s.status] || STATUS.offline;
+      const live = s.status === "online";
+      el.classList.toggle("live", live && statusKnown);
 
-      // Only write if the new className differs — avoids forced style recalcs
-      const nextClass = `cab ${meta.cls}`;
-      if (card.className !== nextClass) card.className = nextClass;
+      const statusEl = el.querySelector('[data-f="status"]');
+      statusEl.className = `status ${st.cls}`;
+      statusEl.innerHTML = `${live ? BOLT : DOT} ${st.label}`;
 
-      const statusEl = card.querySelector('[data-field="status"]');
-      if (statusEl){
-        const next = `● ${meta.label}`;
-        if (statusEl.textContent !== next) statusEl.textContent = next;
-      }
-
-      const setField = (name, value, extraClass) => {
-        const el = card.querySelector(`[data-field="${name}"]`);
-        if (!el) return;
-        if (el.textContent !== value) el.textContent = value;
-        if (extraClass !== undefined){
-          el.classList.toggle("hi",  extraClass === "hi");
-          el.classList.toggle("dim", extraClass === "dim");
-        }
+      const set = (f, html, empty) => {
+        const dd = el.querySelector(`[data-f="${f}"]`);
+        if (dd.innerHTML !== html) dd.innerHTML = html;
+        dd.classList.toggle("empty", !!empty);
       };
 
-      if (TRACKS_PLAYERS[s.game] !== false){
-        setField("players", playersText(s), isReady ? "hi" : "dim");
-      }
-      setField("latency", pingText(s),  typeof s.pingMs     === "number" ? "" : "dim");
-      setField("uptime",  uptimeText(s), parseSystemdTs(s.startedAt)     ? "" : "dim");
+      if (typeof s.playersCurrent === "number"){
+        set("players", `${s.playersCurrent}${typeof s.playersMax === "number" ? `<small>/${s.playersMax}</small>` : ""}`);
+      } else set("players", "–", true);
 
-      const codeEl = card.querySelector('[data-field="endpoint"]');
-      if (codeEl){
-        const display = endpoint || "not plugged in";
-        if (codeEl.textContent !== display) codeEl.textContent = display;
-        codeEl.title = endpoint || "not yet plugged in";
-        codeEl.classList.toggle("dim", !endpoint);
-      }
+      const up = live ? uptimeParts(s) : null;
+      if (up){
+        set("uptime", up.length === 4 ? `${up[0]}<small>${up[1]}</small> ${up[2]}<small>${up[3]}</small>` : `${up[0]}<small>${up[1]}</small>`);
+      } else set("uptime", "–", true);
 
-      const copyBtn = card.querySelector('[data-field="copy"]');
-      if (copyBtn){
-        copyBtn.dataset.label = "COPY";
-        if (endpoint){
-          copyBtn.disabled = false;
-          copyBtn.setAttribute("data-copy", endpoint);
-        } else {
-          copyBtn.disabled = true;
-          copyBtn.removeAttribute("data-copy");
-        }
-      }
-
-      const startBtn = card.querySelector('[data-field="start"]');
-      if (startBtn){
-        const label = isReady ? "PRESS START" : meta.label;
-        startBtn.dataset.label = label;
-        // Don't overwrite mid-feedback text ("✓ COPIED — PASTE IN-GAME")
-        if (!startBtn.textContent.includes("COPIED") && startBtn.textContent.trim() !== label){
-          startBtn.textContent = label;
-        }
-        if (endpoint){
-          startBtn.disabled = false;
-          startBtn.setAttribute("data-connect", endpoint);
-        } else {
-          startBtn.disabled = true;
-          startBtn.removeAttribute("data-connect");
-        }
-      }
+      if (typeof s.pingMs === "number") set("ping", `${Math.round(s.pingMs)}<small>ms</small>`);
+      else set("ping", "–", true);
     }
 
+    const stagesEl = document.getElementById("stages");
     let built = false;
+
     function render(){
-      updateScoreboard();
       if (!built){
-        grid.replaceChildren(...SERVERS.map(buildCard));
+        stagesEl.replaceChildren(...SERVERS.map(buildStage));
         built = true;
       }
-      // Card values are always patched in place (first render included).
-      Array.from(grid.children).forEach((card, idx) => {
-        const s = SERVERS[idx];
-        if (s) patchCard(card, s);
-      });
+      Array.from(stagesEl.children).forEach((el, i) => patchStage(el, SERVERS[i]));
+
+      const real   = SERVERS.filter(s => s.status !== "coming");
+      const online = real.filter(s => s.status === "online");
+      const playing = online.reduce((n, s) => n + (typeof s.playersCurrent === "number" ? s.playersCurrent : 0), 0);
+      const pulse = document.getElementById("pulse");
+      pulse.classList.toggle("quiet", online.length === 0);
+      const worlds = online.length === 1 ? "1 world is" : `${online.length} worlds are`;
+      const people = playing === 1 ? "1 person playing" : `${playing} people playing`;
+      document.getElementById("pulseText").textContent =
+        online.length ? `${worlds} online, ${people} right now` : "Every server is offline right now";
     }
 
-    function openHelp(game){
-      if (game === "Necesse"){
-        helpTitle.textContent = "MANUAL // NECESSE";
-        helpBody.innerHTML = `
-          <ol>
-            <li>Hit <span class="k">COPY</span> on the Necesse cabinet.</li>
-            <li>Launch Necesse.</li>
-            <li>Go to <span class="k">Multiplayer</span> → <span class="k">Join by IP</span>, paste, and join.</li>
-            <li>Type the server passphrase when prompted.</li>
-          </ol>
-          <div class="note"><strong>Open in Steam</strong> launches the game but Steam sometimes ignores auto-connect. Copy is the reliable play.</div>
-        `;
-      } else if (game === "Enshrouded"){
-        helpTitle.textContent = "MANUAL // ENSHROUDED";
-        helpBody.innerHTML = `
-          <ol>
-            <li>Hit <span class="k">COPY</span> on the Enshrouded cabinet.</li>
-            <li>Hit <span class="k">OPEN IN STEAM</span> (or launch Enshrouded yourself).</li>
-            <li>Go to <span class="k">Play</span> → <span class="k">Join</span> → <span class="k">Search by IPv4 / Domain</span>, paste, and join.</li>
-            <li>Type the server passphrase when prompted.</li>
-          </ol>
-          <div class="note">Or just search the server list for <strong>James' Games</strong>. <strong>Open in Steam</strong> launches the game but can't auto-join — copy the endpoint first.</div>
-        `;
-      } else {
-        helpTitle.textContent = "MANUAL // INSERT COIN";
-        helpBody.innerHTML = `
-          <ol>
-            <li>Find a cabinet marked <span class="k">READY</span>.</li>
-            <li>Hit <span class="k">COPY</span> on its endpoint.</li>
-            <li>Launch the game; paste into its multiplayer dialog.</li>
-            <li>Enter the passphrase if prompted.</li>
-          </ol>
-          <div class="note"><strong>Standby cabinets</strong> aren't plugged in yet — they'll light up when they are.</div>
-        `;
-      }
-      helpModal.classList.add("show");
-      helpClose.focus();
-    }
-    function closeHelp(){ helpModal.classList.remove("show"); }
-
-    helpBtn.addEventListener("click", () => openHelp());
-    helpClose.addEventListener("click", closeHelp);
-    helpModal.addEventListener("click", (e) => { if (e.target === helpModal) closeHelp(); });
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && helpModal.classList.contains("show")) closeHelp();
-    });
-
-    // ============== LIVE STATUS (gist) ==============
-    const GIST_BASE    = "https://gist.githubusercontent.com/dontcallmejames/c9e5490e13425a40faecf953f838d579/raw";
-    const NECESSE_URL    = `${GIST_BASE}/necesse.json`;
-    const ENSHROUDED_URL = `${GIST_BASE}/enshrouded.json`;
-
-    function formatObservedShort(iso){
-      try{
-        const d = new Date(iso);
-        const now = new Date();
-        const diff = Math.max(0, (now - d) / 1000);
-        if (diff < 60) return `UPDATED ${Math.floor(diff)}s AGO`;
-        if (diff < 3600) return `UPDATED ${Math.floor(diff/60)}m AGO`;
-        if (diff < 86400) return `UPDATED ${Math.floor(diff/3600)}h AGO`;
-        return `UPDATED ${d.toISOString().slice(0,10)}`;
-      } catch { return "AWAITING..."; }
-    }
+    // ---------- Live status (gist, written by the agents in /agent) ----------
+    const GIST_BASE = "https://gist.githubusercontent.com/dontcallmejames/c9e5490e13425a40faecf953f838d579/raw";
+    const FEEDS = { Necesse: "necesse", Enshrouded: "enshrouded" };
 
     async function fetchJson(url){
       try {
-        const r = await fetch(url + "?t=" + Date.now(), { cache: "no-store" });
-        if (!r.ok) return null;
-        return await r.json();
+        const r = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
+        return r.ok ? await r.json() : null;
       } catch { return null; }
     }
 
+    function ago(iso){
+      const diff = Math.max(0, (Date.now() - new Date(iso)) / 1000);
+      if (diff < 60)   return "just now";
+      if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`;
+      return new Date(iso).toLocaleDateString();
+    }
+
+    let statusKnown = false;
+    let firstPull = true;
     async function pullLiveStatus(){
-      const [nData, eData] = await Promise.all([
-        fetchJson(NECESSE_URL),
-        fetchJson(ENSHROUDED_URL),
-      ]);
+      const entries = Object.entries(FEEDS);
+      const results = await Promise.all(entries.map(([, key]) => fetchJson(`${GIST_BASE}/${key}.json`)));
+      const stamps = [];
 
-      const nec = SERVERS.find(x => x.game === "Necesse");
-      if (nec && nData && nData.necesse){
-        const s = nData.necesse;
-        if (s.status) nec.status = s.status;
-        if (typeof s.player_count === "number") nec.playersCurrent = s.player_count;
-        if (typeof s.max_players   === "number") nec.playersMax     = s.max_players;
-        if (typeof s.upstream_ping_ms === "number") nec.pingMs = s.upstream_ping_ms;
-        if (s.started_at) nec.startedAt = s.started_at;
-      }
+      entries.forEach(([game, key], i) => {
+        const data = results[i];
+        const srv = SERVERS.find(x => x.game === game);
+        if (!srv || !data || !data[key]) return;
+        const s = data[key];
+        if (s.status) srv.status = s.status;
+        if (typeof s.player_count === "number") srv.playersCurrent = s.player_count;
+        if (typeof s.max_players === "number") srv.playersMax = s.max_players;
+        if (typeof s.upstream_ping_ms === "number") srv.pingMs = s.upstream_ping_ms;
+        if (s.started_at) srv.startedAt = s.started_at;
+        if (data.updated_at) stamps.push(data.updated_at);
+      });
 
-      const ens = SERVERS.find(x => x.game === "Enshrouded");
-      if (ens && eData && eData.enshrouded){
-        const s = eData.enshrouded;
-        if (s.status) ens.status = s.status;
-        if (typeof s.player_count === "number") ens.playersCurrent = s.player_count;
-        if (typeof s.max_players   === "number") ens.playersMax     = s.max_players;
-        if (typeof s.upstream_ping_ms === "number") ens.pingMs = s.upstream_ping_ms;
-        if (s.started_at) ens.startedAt = s.started_at;
-      }
-
-      const updates = [nData, eData]
-        .filter(d => d && d.updated_at)
-        .map(d => d.updated_at)
-        .sort();
-      if (updates.length){
-        const newest = updates.at(-1);
-        document.getElementById("lastObserved").textContent = formatObservedShort(newest);
-        document.getElementById("stLast").textContent = formatObservedShort(newest).replace("UPDATED ", "");
+      statusKnown = true;
+      if (stamps.length){
+        document.getElementById("observed").textContent = `Status updated ${ago(stamps.sort().at(-1))}. Refreshes every minute.`;
       }
       render();
+
+      // One orchestrated moment: the neon edges of live servers flicker on, in order.
+      if (firstPull){
+        firstPull = false;
+        let n = 0;
+        stagesEl.querySelectorAll(".stage.live").forEach(el => {
+          el.style.setProperty("--delay", `${0.15 + n++ * 0.35}s`);
+          el.classList.add("ignite");
+        });
+      }
     }
 
     render();
